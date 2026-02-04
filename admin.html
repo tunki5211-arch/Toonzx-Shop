@@ -38,6 +38,11 @@ button{
   border:none;
   font-weight:bold;
 }
+input{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+}
 .qr{
   margin:30px auto;
   max-width:260px;
@@ -45,11 +50,6 @@ button{
   border:2px solid #00ffff;
   padding:20px;
   box-shadow:0 0 20px #00ffff;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin:10px 0;
 }
 #admin{
   display:none;
@@ -67,6 +67,10 @@ input{
   font-weight:bold;
   z-index:999;
 }
+.filter button{
+  width:auto;
+  margin-right:5px;
+}
 </style>
 </head>
 
@@ -76,7 +80,7 @@ input{
   <h1>🧱 ROBLOX ITEM SHOP</h1>
 </header>
 
-<!-- ร้าน -->
+<!-- SHOP -->
 <div id="shop">
 
 <div class="container">
@@ -93,7 +97,7 @@ input{
   </div>
 </div>
 
-<div style="max-width:300px;margin:auto">
+<div style="max-width:320px;margin:auto">
   <input id="name" placeholder="ชื่อผู้ซื้อ">
   <input type="file" id="slip">
   <button onclick="submitOrder()">แจ้งโอน</button>
@@ -108,9 +112,16 @@ input{
 
 </div>
 
-<!-- แอดมิน -->
+<!-- ADMIN -->
 <div id="admin">
   <h2>🔐 หลังบ้านแอดมิน</h2>
+
+  <div class="filter">
+    <button onclick="filterStatus('all')">📋 ทั้งหมด</button>
+    <button onclick="filterStatus('รอตรวจ')">⏳ รอตรวจ</button>
+    <button onclick="filterStatus('สำเร็จ')">✅ สำเร็จ</button>
+  </div>
+
   <div id="orders"></div>
 </div>
 
@@ -118,7 +129,8 @@ input{
 
 <script>
 const ADMIN_PASS = "1234";
-let cart=[];
+let cart = [];
+let currentFilter = "all";
 
 function addItem(name,price){
   cart.push({name,price});
@@ -131,16 +143,15 @@ function copyPP(){
 }
 
 function submitOrder(){
-  const name=document.getElementById("name").value;
-  const file=document.getElementById("slip").files[0];
+  const name = document.getElementById("name").value;
+  const file = document.getElementById("slip").files[0];
   if(!name || !file || cart.length===0){
     alert("กรอกข้อมูลให้ครบ");
     return;
   }
-
-  const reader=new FileReader();
-  reader.onload=()=>{
-    const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const orders = JSON.parse(localStorage.getItem("orders")||"[]");
     orders.push({
       name,
       items:cart,
@@ -157,7 +168,7 @@ function submitOrder(){
 }
 
 function adminLogin(){
-  const pass=prompt("รหัสแอดมิน");
+  const pass = prompt("รหัสแอดมิน");
   if(pass===ADMIN_PASS){
     document.getElementById("shop").style.display="none";
     document.getElementById("admin").style.display="block";
@@ -165,20 +176,31 @@ function adminLogin(){
   }else alert("รหัสผิด");
 }
 
+function filterStatus(s){
+  currentFilter = s;
+  loadOrders();
+}
+
 function loadOrders(){
-  const data=JSON.parse(localStorage.getItem("orders")||"[]");
-  const box=document.getElementById("orders");
+  const data = JSON.parse(localStorage.getItem("orders")||"[]");
+  const box = document.getElementById("orders");
   box.innerHTML="";
   data.forEach((o,i)=>{
+    if(currentFilter!=="all" && o.status!==currentFilter) return;
     box.innerHTML+=`
-      <div style="border:1px solid #00ffff;padding:15px;margin-bottom:15px">
-        👤 ${o.name}<br>
+      <div style="border:1px solid #00ffff;padding:15px;margin:15px 0">
+        👤 <b>${o.name}</b><br>
         📦 ${o.items.map(x=>x.name).join(", ")}<br>
         💰 ฿${o.total}<br>
         🕒 ${o.time}<br>
-        📌 <b>${o.status}</b><br>
+        📌 <b style="color:${o.status==='สำเร็จ'?'#39ff14':'#ff00ff'}">${o.status}</b><br><br>
+
         <button onclick="setStatus(${i},'สำเร็จ')">✅ สำเร็จ</button>
         <button onclick="setStatus(${i},'รอตรวจ')">⏳ รอตรวจ</button>
+        <button onclick="deleteOrder(${i})" style="background:#ff0044;color:white">
+          🗑️ ลบออเดอร์
+        </button>
+
         <img src="${o.slip}" style="width:100%;margin-top:10px">
       </div>
     `;
@@ -186,8 +208,16 @@ function loadOrders(){
 }
 
 function setStatus(i,s){
-  const data=JSON.parse(localStorage.getItem("orders"));
-  data[i].status=s;
+  const data = JSON.parse(localStorage.getItem("orders"));
+  data[i].status = s;
+  localStorage.setItem("orders",JSON.stringify(data));
+  loadOrders();
+}
+
+function deleteOrder(i){
+  if(!confirm("ลบออเดอร์นี้?")) return;
+  const data = JSON.parse(localStorage.getItem("orders"));
+  data.splice(i,1);
   localStorage.setItem("orders",JSON.stringify(data));
   loadOrders();
 }
