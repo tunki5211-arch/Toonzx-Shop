@@ -3,159 +3,84 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ACCESS_FUTUR</title>
+<title>ROBLOX SHOP</title>
 
 <style>
-:root{
-  --neon:#00ffff;
-  --pink:#ff00ff;
-  --bg:#020216;
-  --mid:#05052a;
-}
-
 body{
   margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:var(--bg);
-  color:var(--neon);
   font-family:Consolas, monospace;
-  overflow:hidden;
+  background:#020216;
+  color:#00ffff;
 }
-
-/* scanline */
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.03),
-    rgba(255,255,255,0.03) 1px,
-    transparent 2px,
-    transparent 4px
-  );
-  pointer-events:none;
-}
-
-.login-container{
-  width:380px;
-  padding:40px;
-  background:var(--mid);
-  border:2px solid var(--neon);
-  box-shadow:0 0 30px var(--neon);
-  position:relative;
-  animation:glitch 2s infinite;
-}
-
-@keyframes glitch{
-  0%{transform:none}
-  20%{transform:skewX(0.5deg)}
-  40%{transform:skewX(-0.5deg)}
-  60%{transform:none}
-}
-
-.system-title{
+header{
+  padding:20px;
   text-align:center;
-  font-size:1.6em;
-  margin-bottom:25px;
-  text-shadow:0 0 15px var(--neon);
-  border-bottom:1px solid #00ffff55;
-  padding-bottom:10px;
+  box-shadow:0 0 15px #00ffff;
 }
-
-.input-group{margin-bottom:18px}
-
-label{
-  display:block;
-  margin-bottom:6px;
-  color:var(--pink);
+.container{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:15px;
 }
-
-input{
+.card{
+  background:#05052a;
+  border:1px solid #00ffff;
+  padding:15px;
+  text-align:center;
+}
+button{
+  margin-top:10px;
   width:100%;
   padding:10px;
-  background:#0008;
-  border:1px solid var(--neon);
-  color:#fff;
-  outline:none;
-}
-
-input:focus{
-  border-color:var(--pink);
-  box-shadow:0 0 10px var(--pink);
-}
-
-.login-button{
-  width:100%;
-  padding:14px;
-  margin-top:20px;
-  background:var(--neon);
-  color:#020216;
+  background:#00ffff;
   border:none;
   font-weight:bold;
-  cursor:pointer;
-  box-shadow:0 0 20px var(--neon);
 }
-
-.login-button:hover{
-  background:#99ffff;
-}
-
-.status{
+.qr{
+  margin:30px auto;
+  max-width:260px;
   text-align:center;
-  margin-top:20px;
-  font-size:.8em;
-  color:var(--pink);
+  border:2px solid #00ffff;
+  padding:20px;
+}
+.qr img{
+  width:100%;
 }
 </style>
 </head>
 
 <body>
 
-<div class="login-container">
-  <div class="system-title">ACCESS_FUTUR</div>
-
-  <form onsubmit="login(event)">
-    <div class="input-group">
-      <label>Discord</label>
-      <input id="discord" placeholder="ใส่ 1234 ได้" required>
-    </div>
-
-    <div class="input-group">
-      <label>Password</label>
-      <input type="password" id="password" required>
-    </div>
-
-    <button class="login-button">LOG IN</button>
-
-    <div class="status">// SYSTEM READY</div>
-  </form>
-</div>
-
 <script>
-/* ปิดคลิกขวา + inspect */
-document.addEventListener("contextmenu",e=>e.preventDefault());
-document.addEventListener("keydown",e=>{
-  if(e.key==="F12"|| (e.ctrlKey && e.shiftKey && e.key==="I")) e.preventDefault();
-});
-
-function login(e){
-  e.preventDefault();
-
-  const pass = document.getElementById("password").value;
-  const discord = document.getElementById("discord").value;
-
-  if(pass==="919921" && discord.length>0){
-    alert("ACCESS GRANTED");
-    window.location.href="shop.html";
-  }else{
-    alert("ACCESS DENIED");
-  }
+// 🚫 กันเข้าโดยไม่ล็อกอิน
+if(localStorage.getItem("login")!=="true"){
+  location.href="index.html";
 }
 </script>
+
+<header>
+  <h1>🧱 ROBLOX ITEM SHOP</h1>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h3>Robux 400</h3>
+    <p>฿150</p>
+    <button>ซื้อ</button>
+  </div>
+  <div class="card">
+    <h3>VIP Server</h3>
+    <p>฿99</p>
+    <button>ซื้อ</button>
+  </div>
+</div>
+
+<div class="qr">
+  <h3>PromptPay</h3>
+  <img src="qr.png">
+  <p>สแกนเพื่อชำระเงิน</p>
+</div>
 
 </body>
 </html>
