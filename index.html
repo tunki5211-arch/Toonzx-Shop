@@ -7,30 +7,33 @@
 
 <style>
 body{margin:0;font-family:Consolas;background:#020216;color:#00ffff}
-header{text-align:center;padding:20px;box-shadow:0 0 15px #00ffff}
+header{text-align:center;padding:15px;box-shadow:0 0 15px #00ffff}
 button{padding:10px;width:100%;background:#00ffff;border:none;font-weight:bold;margin-top:5px}
 input{width:100%;padding:10px;margin:5px 0}
-.shop,.admin{padding:20px}
+.shop,.admin{padding:15px}
 .card{border:1px solid #00ffff;padding:15px;margin:10px}
 .featured{border:2px solid #ff00ff;box-shadow:0 0 15px #ff00ff}
 .hidden{display:none}
 .order{border:1px solid #00ffff;padding:10px;margin:10px}
+.admin{position:fixed;top:0;left:0;width:100%;height:100%;overflow:auto;background:#020216;z-index:999}
+.small{font-size:12px;opacity:.8}
+.flex{display:flex;gap:5px}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>🧱 ROBLOX ITEM SHOP</h1>
-<button onclick="toggleAdmin()">🔐 เข้าแอดมิน</button>
+<h2>🧱 ROBLOX ITEM SHOP</h2>
+<button onclick="toggleAdmin()">🔐 แอดมิน</button>
 </header>
 
 <!-- SHOP -->
 <div class="shop">
-<h2>🛒 สินค้า</h2>
+<h3>🛒 สินค้า</h3>
 <div id="shop"></div>
 
-<h3>📤 อัปโหลดสลิป</h3>
+<h4>📤 อัปโหลดสลิป</h4>
 <input id="customer" placeholder="ชื่อลูกค้า">
 <input type="file">
 <button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
@@ -38,30 +41,49 @@ input{width:100%;padding:10px;margin:5px 0}
 
 <!-- ADMIN -->
 <div class="admin hidden" id="admin">
-<h2>🔐 ADMIN</h2>
+<h3>🔐 ADMIN</h3>
 <input id="adminPass" type="password" placeholder="รหัสแอดมิน">
-<button onclick="login()">เข้าแอดมิน</button>
+<button onclick="login()">เข้า</button>
 
 <div id="panel" class="hidden">
 
-<h3>📊 ออเดอร์</h3>
+<h4>📊 สรุปยอดขาย</h4>
+<div id="summary"></div>
+
+<h4>📦 ออเดอร์</h4>
 <div id="orders"></div>
 
-<h3>➕ เพิ่มสินค้า</h3>
+<h4>➕ เพิ่มสินค้า</h4>
 <input id="pname" placeholder="ชื่อสินค้า">
 <input id="pprice" placeholder="ราคา">
 <label><input type="checkbox" id="pfea"> สินค้าแนะนำ</label>
 <button onclick="addProduct()">เพิ่มสินค้า</button>
 
-<h3>🗑️ จัดการสินค้า</h3>
+<h4>🛠️ จัดการสินค้า</h4>
 <div id="adminProducts"></div>
 
+<button onclick="toggleAdmin()">❌ ปิดแอดมิน</button>
 </div>
 </div>
 
 <script>
+/* ================= CONFIG ================= */
 const ADMIN_PASSWORD="919921";
 
+/* 🔥 Firebase (ใส่ทีหลังได้)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+const firebaseConfig = {
+ apiKey: "YOUR_KEY",
+ authDomain: "YOUR_DOMAIN",
+ projectId: "YOUR_ID",
+};
+initializeApp(firebaseConfig);
+const db = getFirestore();
+*/
+
+/* ================= DATA ================= */
 let products=JSON.parse(localStorage.getItem("products"))||[
  {name:"Robux 800",price:299,featured:true},
  {name:"Robux 400",price:150,featured:false},
@@ -70,14 +92,14 @@ let products=JSON.parse(localStorage.getItem("products"))||[
 
 let cart=[];
 
-/* SHOP */
+/* ================= SHOP ================= */
 function renderShop(){
  shop.innerHTML="";
  products.forEach((p,i)=>{
   shop.innerHTML+=`
   <div class="card ${p.featured?'featured':''}">
-   <h3>${p.name}</h3>
-   <p>${p.price} บาท</p>
+   <b>${p.name}</b>
+   <div>${p.price} บาท</div>
    <button onclick="addCart(${i})">ซื้อ</button>
   </div>`;
  });
@@ -94,8 +116,9 @@ function checkout(){
  if(cart.length==0) return alert("ยังไม่เลือกสินค้า");
  let orders=JSON.parse(localStorage.getItem("orders"))||[];
  orders.push({
-  name:customer.value||"ไม่ระบุชื่อ",
+  name:customer.value||"ไม่ระบุ",
   items:cart,
+  total:cart.reduce((s,x)=>s+x.price,0),
   status:"รอตรวจ"
  });
  localStorage.setItem("orders",JSON.stringify(orders));
@@ -103,7 +126,7 @@ function checkout(){
  cart=[];
 }
 
-/* ADMIN */
+/* ================= ADMIN ================= */
 function toggleAdmin(){
  admin.classList.toggle("hidden");
 }
@@ -113,9 +136,18 @@ function login(){
  panel.classList.remove("hidden");
  loadOrders();
  renderAdminProducts();
+ renderSummary();
 }
 
-/* ORDERS */
+/* ================= SUMMARY ================= */
+function renderSummary(){
+ let o=JSON.parse(localStorage.getItem("orders"))||[];
+ let total=o.filter(x=>x.status=="สำเร็จ")
+            .reduce((s,x)=>s+x.total,0);
+ summary.innerHTML=`💰 ยอดขายรวม: <b>${total}</b> บาท`;
+}
+
+/* ================= ORDERS ================= */
 function loadOrders(){
  orders.innerHTML="";
  let o=JSON.parse(localStorage.getItem("orders"))||[];
@@ -124,6 +156,7 @@ function loadOrders(){
   <div class="order">
    <b>${x.name}</b><br>
    ${x.items.map(it=>it.name).join(", ")}<br>
+   รวม ${x.total} บาท<br>
    สถานะ: ${x.status}<br>
    <button onclick="done(${i})">✔ สำเร็จ</button>
    <button onclick="delOrder(${i})">🗑️ ลบ</button>
@@ -135,17 +168,16 @@ function done(i){
  let o=JSON.parse(localStorage.getItem("orders"));
  o[i].status="สำเร็จ";
  localStorage.setItem("orders",JSON.stringify(o));
- loadOrders();
+ loadOrders(); renderSummary();
 }
-
 function delOrder(i){
  let o=JSON.parse(localStorage.getItem("orders"));
  o.splice(i,1);
  localStorage.setItem("orders",JSON.stringify(o));
- loadOrders();
+ loadOrders(); renderSummary();
 }
 
-/* PRODUCTS */
+/* ================= PRODUCTS ================= */
 function addProduct(){
  products.push({
   name:pname.value,
@@ -154,8 +186,7 @@ function addProduct(){
  });
  pname.value=pprice.value="";
  pfea.checked=false;
- renderShop();
- renderAdminProducts();
+ renderShop(); renderAdminProducts();
 }
 
 function renderAdminProducts(){
@@ -163,18 +194,39 @@ function renderAdminProducts(){
  products.forEach((p,i)=>{
   adminProducts.innerHTML+=`
    <div class="order">
-    ${p.name} - ${p.price} บาท ${p.featured?"⭐":""}
-    <button onclick="deleteProduct(${i})">🗑️ ลบ</button>
+    <input value="${p.name}" onchange="editName(${i},this.value)">
+    <input type="number" value="${p.price}" onchange="editPrice(${i},this.value)">
+    <div class="flex">
+     <button onclick="moveUp(${i})">⬆️</button>
+     <button onclick="moveDown(${i})">⬇️</button>
+     <button onclick="deleteProduct(${i})">🗑️</button>
+    </div>
    </div>`;
  });
 }
 
+function editName(i,v){products[i].name=v;saveProducts()}
+function editPrice(i,v){products[i].price=Number(v);saveProducts()}
+
+function moveUp(i){
+ if(i==0) return;
+ [products[i-1],products[i]]=[products[i],products[i-1]];
+ saveProducts();
+}
+function moveDown(i){
+ if(i==products.length-1) return;
+ [products[i+1],products[i]]=[products[i],products[i+1]];
+ saveProducts();
+}
 function deleteProduct(i){
- if(!confirm("ลบสินค้านี้แน่ใจนะ?")) return;
+ if(!confirm("ลบสินค้า?")) return;
  products.splice(i,1);
+ saveProducts();
+}
+
+function saveProducts(){
  localStorage.setItem("products",JSON.stringify(products));
- renderShop();
- renderAdminProducts();
+ renderShop(); renderAdminProducts();
 }
 </script>
 
