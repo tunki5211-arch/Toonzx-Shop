@@ -3,29 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <title>Toonzx Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #111;
+      background: #0f0f14;
       color: #fff;
       text-align: center;
-      padding: 40px;
-    }
-    .box {
-      background: #1e1e1e;
       padding: 20px;
-      border-radius: 12px;
-      max-width: 400px;
+    }
+    h1 {
+      color: #00ffff;
+    }
+    .shop {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      max-width: 900px;
       margin: auto;
     }
+    .item {
+      background: #1b1b25;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 15px #00ffff33;
+    }
+    .item img {
+      width: 100%;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
     button {
-      padding: 12px 20px;
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
       border: none;
       border-radius: 8px;
       background: #00ff88;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
+    }
+    button:hover {
+      background: #66ffbb;
+    }
+    .cart {
+      margin-top: 30px;
+      background: #1e1e2e;
+      padding: 15px;
+      border-radius: 12px;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    a.discord {
+      display: inline-block;
       margin-top: 15px;
+      color: #00aaff;
+      text-decoration: none;
+      font-weight: bold;
     }
     footer {
       margin-top: 30px;
@@ -36,29 +71,72 @@
 </head>
 <body>
 
-  <!-- 1. หัวเว็บ -->
-  <h1>Toonzx Shop</h1>
-  <p>ร้านขายของ Roblox | รหัสร้าน: <b>1234</b></p>
+  <!-- หัวเว็บ -->
+  <h1>🧱 Toonzx Roblox Shop</h1>
+  <p>รหัสร้าน: <b>1234</b></p>
 
-  <div class="box">
-    <!-- 2. สินค้า -->
-    <h2>สินค้า Roblox</h2>
-    <p>ไอเทมพิเศษ | โค้ดสินค้า: <b>1234</b></p>
+  <!-- สินค้า -->
+  <div class="shop">
+    <div class="item">
+      <img src="https://via.placeholder.com/300x180?text=Robux+400">
+      <h3>Robux 400</h3>
+      <p>ราคา ฿150</p>
+      <button onclick="addToCart('Robux 400')">เพิ่มลงตะกร้า</button>
+    </div>
 
-    <!-- 3. ปุ่ม -->
-    <button onclick="alert('สั่งซื้อด้วยรหัส 1234')">
-      ซื้อสินค้า (1234)
-    </button>
+    <div class="item">
+      <img src="https://via.placeholder.com/300x180?text=Robux+800">
+      <h3>Robux 800</h3>
+      <p>ราคา ฿299</p>
+      <button onclick="addToCart('Robux 800')">เพิ่มลงตะกร้า</button>
+    </div>
 
-    <!-- 4. Discord -->
-    <p style="margin-top:20px;">
-      ติดต่อ Discord: <b>https://discord.gg/aWSKKgTG3</b>
-    </p>
+    <div class="item">
+      <img src="https://via.placeholder.com/300x180?text=VIP+Server">
+      <h3>VIP Server</h3>
+      <p>ราคา ฿99</p>
+      <button onclick="addToCart('VIP Server')">เพิ่มลงตะกร้า</button>
+    </div>
+  </div>
+
+  <!-- ตะกร้า -->
+  <div class="cart">
+    <h3>🛒 ตะกร้าสินค้า</h3>
+    <p id="cart">ยังไม่ได้เลือกสินค้า</p>
+
+    <button onclick="checkout()">สั่งซื้อ (รหัส 1234)</button>
+
+    <!-- Discord -->
+    <br>
+    <a class="discord" href="https://discord.gg/1234" target="_blank">
+      ติดต่อร้านทาง Discord
+    </a>
   </div>
 
   <footer>
-    © 2026 Toonzx Shop | Code: 1234
+    © 2026 Toonzx Shop | Code 1234
   </footer>
+
+  <script>
+    let cart = [];
+
+    function addToCart(item) {
+      cart.push(item);
+      document.getElementById("cart").innerText = cart.join(", ");
+    }
+
+    function checkout() {
+      if (cart.length === 0) {
+        alert("ยังไม่ได้เลือกสินค้า");
+        return;
+      }
+      alert(
+        "รายการที่สั่ง:\n" +
+        cart.join(", ") +
+        "\n\nรหัสร้าน: ตูนสุดหล่อ\nติดต่อ Discord เพื่อชำระเงิน"
+      );
+    }
+  </script>
 
 </body>
 </html>
