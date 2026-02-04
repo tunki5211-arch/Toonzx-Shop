@@ -2,141 +2,108 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>Toonzx Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ร้านค้า Roblox ธีมนีออน</title>
   <style>
+    /* โครงสร้างพื้นฐาน */
     body {
-      font-family: Arial, sans-serif;
-      background: #0f0f14;
-      color: #fff;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #000000, #0a0a0a);
+      color: #ffffff;
+      font-family: Arial, Helvetica, Tahoma, sans-serif;
       text-align: center;
-      padding: 20px;
     }
-    h1 {
+    /* เมนูนำทาง */
+    nav {
+      background-color: #111111;
+      box-shadow: 0 0 10px #00ffff;
+      padding: 10px;
+    }
+    .navbar {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .navbar li {
+      display: inline-block;
+      margin: 0 15px;
+    }
+    .navbar a {
+      color: #00ffff;
+      font-size: 18px;
+      font-weight: bold;
+      text-decoration: none;
+      padding: 8px 16px;
+      border: 2px solid #00ffff;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+      transition: 0.3s;
+    }
+    .navbar a:visited {
       color: #00ffff;
     }
-    .shop {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-      max-width: 900px;
-      margin: auto;
+    .navbar a:hover {
+      color: #ffffff;
+      box-shadow: 0 0 20px #00ffff, 0 0 30px #00ffff;
     }
-    .item {
-      background: #1b1b25;
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 0 15px #00ffff33;
+    /* ชื่อร้าน */
+    h1 {
+      margin-top: 40px;
+      font-size: 48px;
+      color: #ff0099;
+      text-shadow: 0 0 5px #ff0099, 0 0 10px #ff0099;
     }
-    .item img {
-      width: 100%;
-      border-radius: 8px;
-      margin-bottom: 10px;
+    /* คำอธิบายร้าน */
+    p.subtitle {
+      font-size: 20px;
+      color: #00ff99;
+      text-shadow: 0 0 3px #00ff99;
     }
-    button {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #00ff88;
-      font-size: 15px;
+    /* คิวอาร์โค้ด */
+    .qr-container {
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+    .qr-container img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border: 4px solid #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ff99, 0 0 20px #00ff99;
+      transition: transform 0.3s, box-shadow 0.3s;
       cursor: pointer;
     }
-    button:hover {
-      background: #66ffbb;
+    .qr-container img:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px #00ff99, 0 0 30px #00ff99;
     }
-    .cart {
-      margin-top: 30px;
-      background: #1e1e2e;
-      padding: 15px;
-      border-radius: 12px;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    a.discord {
-      display: inline-block;
-      margin-top: 15px;
-      color: #00aaff;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    footer {
-      margin-top: 30px;
-      font-size: 14px;
-      opacity: 0.7;
+    /* คำอธิบายใต้รูป */
+    .qr-container p {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #ffffff;
+      text-shadow: 0 0 3px #ffffff;
     }
   </style>
 </head>
 <body>
-
-  <!-- หัวเว็บ -->
-  <h1>🧱 Toonzx Roblox Shop</h1>
-  <p>รหัสร้าน: <b>1234</b></p>
-
-  <!-- สินค้า -->
-  <div class="shop">
-    <div class="item">
-      <img src="https://via.placeholder.com/300x180?text=Robux+400">
-      <h3>Robux 400</h3>
-      <p>ราคา ฿150</p>
-      <button onclick="addToCart('Robux 400')">เพิ่มลงตะกร้า</button>
-    </div>
-
-    <div class="item">
-      <img src="https://via.placeholder.com/300x180?text=Robux+800">
-      <h3>Robux 800</h3>
-      <p>ราคา ฿299</p>
-      <button onclick="addToCart('Robux 800')">เพิ่มลงตะกร้า</button>
-    </div>
-
-    <div class="item">
-      <img src="https://via.placeholder.com/300x180?text=VIP+Server">
-      <h3>VIP Server</h3>
-      <p>ราคา ฿99</p>
-      <button onclick="addToCart('VIP Server')">เพิ่มลงตะกร้า</button>
-    </div>
-  </div>
-
-  <!-- ตะกร้า -->
-  <div class="cart">
-    <h3>🛒 ตะกร้าสินค้า</h3>
-    <p id="cart">ยังไม่ได้เลือกสินค้า</p>
-
-    <button onclick="checkout()">สั่งซื้อ (รหัส 1234)</button>
-
-    <!-- Discord -->
-    <br>
-    <a class="discord" href="https://discord.gg/1234" target="_blank">
-      ติดต่อร้านทาง Discord
+  <nav>
+    <ul class="navbar">
+      <li><a href="https://discord.gg/yourInviteLink" target="_blank">Discord</a></li>
+      <li><a href="index.html">หน้าหลัก</a></li>
+      <li><a href="products.html">สินค้า</a></li>
+    </ul>
+  </nav>
+  <h1>ร้านค้า Roblox ธีมนีออน</h1>
+  <p class="subtitle">มาเยี่ยมชมร้านของเรา รับไอเทมเจ๋งๆ ได้เลย!</p>
+  <div class="qr-container">
+    <!-- ใส่ลิงก์รูป QR พร้อมเพย์ของคุณที่นี่ -->
+    <a href="URL_QR_IMAGE" target="_blank">
+      <img src="URL_QR_IMAGE" alt="QR พร้อมเพย์ เพื่อโอนเงิน">
     </a>
+    <p>สแกน QR พร้อมเพย์ เพื่อโอนเงิน</p>
   </div>
-
-  <footer>
-    © 2026 Toonzx Shop | Code 1234
-  </footer>
-
-  <script>
-    let cart = [];
-
-    function addToCart(item) {
-      cart.push(item);
-      document.getElementById("cart").innerText = cart.join(", ");
-    }
-
-    function checkout() {
-      if (cart.length === 0) {
-        alert("ยังไม่ได้เลือกสินค้า");
-        return;
-      }
-      alert(
-        "รายการที่สั่ง:\n" +
-        cart.join(", ") +
-        "\n\nรหัสร้าน: ตูนสุดหล่อ\nติดต่อ Discord เพื่อชำระเงิน"
-      );
-    }
-  </script>
-
 </body>
 </html>
