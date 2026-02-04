@@ -1,90 +1,138 @@
-<!DOCTYPE html>
-<html lang="th">
+<!DOCTYPE html><html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>Roblox Shop | PromptPay</title>
-
-<style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#000;
-  font-family:Arial, sans-serif;
-  color:#39ff14;
-}
-
-.container{
-  text-align:center;
-}
-
-h1{
-  font-size:2.5rem;
-  text-shadow:0 0 10px #39ff14, 0 0 30px #39ff14;
-  margin-bottom:20px;
-}
-
-/* กล่อง QR */
-.qr-box{
-  background:#0a0a0a;
-  padding:25px;
-  border-radius:15px;
-  border:2px solid #39ff14;
-  box-shadow:0 0 20px #39ff14;
-}
-
-.qr-box img{
-  width:220px;
-  border-radius:10px;
-  border:2px solid #39ff14;
-}
-
-/* ปุ่มนีออน */
-.neon-btn{
-  margin-top:25px;
-  display:inline-block;
-  padding:15px 35px;
-  font-size:20px;
-  font-weight:bold;
-  color:#000;
-  background:#39ff14;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  box-shadow:0 0 20px #39ff14, 0 0 40px #39ff14;
-  transition:0.3s;
-}
-
-.neon-btn:hover{
-  background:#000;
-  color:#39ff14;
-  box-shadow:0 0 30px #39ff14, 0 0 60px #39ff14;
-}
-
-/* ข้อความใต้ QR */
-.qr-text{
-  margin-top:15px;
-  font-size:1.2rem;
-  text-shadow:0 0 5px #39ff14;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game Item Shop</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Consolas, monospace;
+      background: #020216;
+      color: #00ffff;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #00ffff55;
+      box-shadow: 0 0 15px #00ffff55;
+    }
+    h1 { margin: 0; }
+    .container {
+      padding: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #05052a;
+      border: 1px solid #00ffff;
+      box-shadow: 0 0 15px #00ffff55;
+      padding: 20px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 25px #00ffff;
+    }
+    .card img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      border: 1px solid #00ffff55;
+    }
+    .price {
+      color: #ff00ff;
+      margin: 10px 0;
+      font-weight: bold;
+    }
+    button {
+      background: #00ffff;
+      color: #020216;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+      box-shadow: 0 0 15px #00ffff;
+    }
+    button:hover {
+      background: #99ffff;
+    }
+    footer {
+      padding: 15px;
+      text-align: center;
+      border-top: 1px solid #00ffff55;
+      margin-top: 30px;
+    }
+  </style>
 </head>
-
-<body>
-<div class="container">
-
-  <h1>ร้านค้า Roblox Neon Cyber</h1>
-
-  <div class="qr-box">
-    <!-- ใส่รูป QR ของคุณตรงนี้ -->
-    <img src="promptpay-qr.png" alt="PromptPay QR">
-    <div class="qr-text">สแกน QR เพื่อชำระเงิน</div>
+<body><header>
+  <h1>🧱 ROBLOX ITEM SHOP</h1>
+  <p>ร้านขายไอเทม & Robux สำหรับ Roblox</p>
+</header><div class="container">
+  <div class="card">
+    <img src="https://via.placeholder.com/300x140" />
+    <h3>Robux 400</h3>
+    <div class="price">฿15</div>
+    <button onclick="addToCart('Robux 400')">ซื้อเลย</button>
+  </div>  <div class="card">
+    <img src="https://via.placeholder.com/300x140" />
+    <h3>Robux 800</h3>
+    <div class="price">฿50</div>
+    <button onclick="addToCart('Robux 800')">ซื้อเลย</button>
+  </div>  <div class="card">
+    <img src="https://via.placeholder.com/300x140" />
+    <h3>Gamepass (กำหนดเอง)</h3>
+    <div class="price">฿25</div>
+    <button onclick="addToCart('Custom Gamepass')">ซื้อเลย</button>
+  </div>  <div class="card">
+    <img src="https://via.placeholder.com/300x140" />
+    <h3>VIP Server</h3>
+    <div class="price">฿35</div>
+    <button onclick="addToCart('VIP Server')">ซื้อเลย</button>
   </div>
-
-  <button class="neon-btn">ชำระเงิน PromptPay</button>
-
 </div>
-</body>
+    <button onclick="addToCart('Diamond Pack')">ซื้อเลย</button>
+  </div>  <div class="card">
+    <img src="https://via.placeholder.com/300x140" />
+    <h3>Skin ระดับ Epic</h3>
+    <div class="price">฿29</div>
+    <button onclick="addToCart('Epic Skin')">ซื้อเลย</button>
+  </div>  <div class="card">
+    <img src="https://via.placeholder.com/300x140" />
+    <h3>Battle Pass</h3>
+    <div class="price">฿55</div>
+    <button onclick="addToCart('Battle Pass')">ซื้อเลย</button>
+  </div>
+</div><section style="padding:30px; max-width:500px; margin:auto;">
+  <h2>📦 ข้อมูลผู้สั่งซื้อ</h2>
+  <input id="rbx" placeholder="Username Roblox" style="width:100%;padding:10px;margin:10px 0;" />
+  <input id="dc" placeholder="Discord เช่น user#1234" style="width:100%;padding:10px;margin:10px 0;" />
+  <button onclick="submitOrder()">ส่งออเดอร์ไป Discord</button>
+</section><footer>
+  <p>© 2026 Roblox Shop</p>
+</footer><script>
+  let cart = [];
+
+  function addToCart(item) {
+    cart.push(item);
+    alert(item + ' ถูกเพิ่มลงตะกร้าแล้ว');
+  }
+
+  function submitOrder() {
+    const username = document.getElementById('rbx').value;
+    const discord = document.getElementById('dc').value;
+
+    if (!username || !discord || cart.length === 0) {
+      alert('กรุณากรอกข้อมูลให้ครบ และเลือกสินค้า');
+      return;
+    }
+
+    const message = `Roblox Order%0AUser: ${username}%0ADiscord: ${discord}%0AItems: ${cart.join(', ')}`;
+    const webhook = 'PUT_DISCORD_WEBHOOK_URL_HERE';
+    window.open(`${webhook}?content=${message}`);
+  }
+</script></body>
 </html>
