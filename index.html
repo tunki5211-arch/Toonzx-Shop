@@ -2,58 +2,149 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>ADMIN</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROBLOX SHOP</title>
+
 <style>
-body{font-family:Consolas;background:#020216;color:#00ffff}
+body{margin:0;font-family:Consolas;background:#020216;color:#00ffff}
+header{text-align:center;padding:20px;box-shadow:0 0 15px #00ffff}
+h2{text-align:center}
+.shop,.admin{padding:20px}
+.card{border:1px solid #00ffff;padding:15px;margin:10px}
+.featured{border:2px solid #ff00ff;box-shadow:0 0 15px #ff00ff}
+button{padding:10px;width:100%;background:#00ffff;border:none;font-weight:bold;margin-top:5px}
+input{width:100%;padding:10px;margin:5px 0}
+.hidden{display:none}
 .order{border:1px solid #00ffff;padding:10px;margin:10px}
 </style>
 </head>
+
 <body>
 
-<h2>🔐 ADMIN LOGIN</h2>
-<input id="pass" type="password" placeholder="Admin Password">
-<button onclick="login()">เข้า</button>
+<header>
+<h1>🧱 ROBLOX ITEM SHOP</h1>
+<button onclick="toggleAdmin()">🔐 เข้าแอดมิน</button>
+</header>
 
-<div id="panel" style="display:none">
-  <h3>📦 Orders</h3>
-  <div id="list"></div>
+<!-- SHOP -->
+<div class="shop">
+<h2>🛒 สินค้า</h2>
+<div id="shop"></div>
+
+<h3>📤 อัปโหลดสลิป</h3>
+<input id="customer" placeholder="ชื่อลูกค้า">
+<input type="file">
+<button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
+</div>
+
+<!-- ADMIN -->
+<div class="admin hidden" id="admin">
+<h2>🔐 ADMIN</h2>
+<input id="adminPass" type="password" placeholder="รหัสแอดมิน">
+<button onclick="login()">เข้าแอดมิน</button>
+
+<div id="panel" class="hidden">
+<h3>📊 ออเดอร์</h3>
+<div id="orders"></div>
+
+<h3>➕ เพิ่มสินค้า (ไม่ต้องแก้โค้ด)</h3>
+<input id="pname" placeholder="ชื่อสินค้า">
+<input id="pprice" placeholder="ราคา">
+<label><input type="checkbox" id="pfea"> สินค้าแนะนำ</label>
+<button onclick="addProduct()">เพิ่มสินค้า</button>
+</div>
 </div>
 
 <script>
-const PASSWORD="919921";
+const ADMIN_PASSWORD="919921";
 
-function login(){
-  if(pass.value!==PASSWORD)return alert("รหัสผิด");
-  panel.style.display="block";
-  load();
+let products=JSON.parse(localStorage.getItem("products"))||[
+ {name:"Robux 800",price:299,featured:true},
+ {name:"Robux 400",price:150,featured:false},
+ {name:"VIP Server",price:99,featured:false}
+];
+
+let cart=[];
+
+function renderShop(){
+ shop.innerHTML="";
+ products.forEach((p,i)=>{
+  shop.innerHTML+=`
+  <div class="card ${p.featured?'featured':''}">
+   <h3>${p.name}</h3>
+   <p>${p.price} บาท</p>
+   <button onclick="addCart(${i})">ซื้อ</button>
+  </div>`;
+ });
+ localStorage.setItem("products",JSON.stringify(products));
+}
+renderShop();
+
+function addCart(i){
+ cart.push(products[i]);
+ alert("เพิ่มสินค้าแล้ว");
 }
 
-function load(){
-  const orders=JSON.parse(localStorage.getItem("orders")||"[]");
-  list.innerHTML="";
-  orders.forEach((o,i)=>{
-    list.innerHTML+=`
-      <div class="order">
-        <b>${o.name}</b><br>
-        ${o.items.map(x=>x.n).join(", ")}<br>
-        สถานะ: ${o.status}<br>
-        <button onclick="done(${i})">สำเร็จ</button>
-        <button onclick="del(${i})">ลบ</button>
-      </div>`;
-  });
+function checkout(){
+ if(cart.length==0)return alert("ยังไม่เลือกสินค้า");
+ let orders=JSON.parse(localStorage.getItem("orders"))||[];
+ orders.push({
+  name:customer.value,
+  items:cart,
+  status:"รอตรวจ"
+ });
+ localStorage.setItem("orders",JSON.stringify(orders));
+ alert("โอนแล้วให้ทักแอดมิน");
+ cart=[];
+}
+
+function toggleAdmin(){
+ admin.classList.toggle("hidden");
+}
+
+function login(){
+ if(adminPass.value!==ADMIN_PASSWORD)return alert("รหัสผิด");
+ panel.classList.remove("hidden");
+ loadOrders();
+}
+
+function loadOrders(){
+ orders.innerHTML="";
+ let o=JSON.parse(localStorage.getItem("orders"))||[];
+ o.forEach((x,i)=>{
+  orders.innerHTML+=`
+  <div class="order">
+   <b>${x.name}</b><br>
+   ${x.items.map(it=>it.name).join(", ")}<br>
+   สถานะ: ${x.status}<br>
+   <button onclick="done(${i})">สำเร็จ</button>
+   <button onclick="del(${i})">ลบ</button>
+  </div>`;
+ });
 }
 
 function done(i){
-  const o=JSON.parse(localStorage.getItem("orders"));
-  o[i].status="สำเร็จ";
-  localStorage.setItem("orders",JSON.stringify(o));
-  load();
+ let o=JSON.parse(localStorage.getItem("orders"));
+ o[i].status="สำเร็จ";
+ localStorage.setItem("orders",JSON.stringify(o));
+ loadOrders();
 }
 function del(i){
-  const o=JSON.parse(localStorage.getItem("orders"));
-  o.splice(i,1);
-  localStorage.setItem("orders",JSON.stringify(o));
-  load();
+ let o=JSON.parse(localStorage.getItem("orders"));
+ o.splice(i,1);
+ localStorage.setItem("orders",JSON.stringify(o));
+ loadOrders();
+}
+
+function addProduct(){
+ products.push({
+  name:pname.value,
+  price:Number(pprice.value),
+  featured:pfea.checked
+ });
+ pname.value=pprice.value="";
+ pfea.checked=false;
+ renderShop();
 }
 </script>
 
