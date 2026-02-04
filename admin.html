@@ -13,8 +13,6 @@ body{
   color:#00ffff;
 }
 .hidden{display:none}
-
-/* ---------- SHOP ---------- */
 header{
   padding:20px;
   text-align:center;
@@ -41,16 +39,11 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-.cart, .qr, .thank{
+.cart,.qr,.thank{
   margin:30px auto;
   max-width:320px;
   text-align:center;
   border:2px solid #00ffff;
-  padding:20px;
-}
-
-/* ---------- ADMIN ---------- */
-.admin{
   padding:20px;
 }
 .order{
@@ -58,48 +51,25 @@ button{
   padding:10px;
   margin-bottom:15px;
 }
-.order img{
-  width:100%;
-  margin-top:10px;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-}
+.order img{width:100%}
+input{width:100%;padding:10px;margin-top:10px}
 </style>
 </head>
 
 <body>
 
-<!-- ================= SHOP ================= -->
+<!-- SHOP -->
 <div id="shop">
+<header><h1>🧱 ROBLOX ITEM SHOP</h1></header>
 
-<header>
-  <h1>🧱 ROBLOX ITEM SHOP</h1>
-</header>
-
-<div class="container">
-  <div class="card">
-    <h3>Robux 400</h3>
-    <p>฿150</p>
-    <button onclick="add('Robux 400',150)">ซื้อ</button>
-  </div>
-  <div class="card">
-    <h3>VIP Server</h3>
-    <p>฿99</p>
-    <button onclick="add('VIP Server',99)">ซื้อ</button>
-  </div>
-</div>
+<div class="container" id="products"></div>
 
 <div class="cart">
   <h3>🛒 ตะกร้า</h3>
   <div id="cart"></div>
   <p id="total"></p>
-
   <input id="customer" placeholder="ชื่อลูกค้า / Roblox">
   <input type="file" id="slip" accept="image/*">
-
   <button onclick="finish()">แจ้งโอนแล้ว</button>
 </div>
 
@@ -113,53 +83,61 @@ input{
   <h2>✅ ขอบคุณครับ</h2>
   <p>แอดมินจะติดต่อกลับเร็ว ๆ นี้</p>
 </div>
-
 </div>
 
-<!-- ================= ADMIN ================= -->
+<!-- ADMIN -->
 <div id="admin" class="hidden">
-  <header>
-    <h1>🔐 ADMIN PANEL</h1>
-  </header>
-
-  <div class="admin">
-    <button onclick="logout()">ออกจากแอดมิน</button>
-    <h3>📦 รายการออเดอร์</h3>
-    <div id="orders"></div>
-  </div>
+<header><h1>🔐 ADMIN PANEL</h1></header>
+<div style="padding:20px">
+  <button onclick="logout()">ออกจากแอดมิน</button>
+  <h3>📦 ออเดอร์</h3>
+  <div id="orders"></div>
+</div>
 </div>
 
 <script>
+/* ===== สินค้า (เพิ่มง่ายตรงนี้) ===== */
+const products = [
+  {name:"Robux 400", price:150},
+  {name:"VIP Server", price:99},
+  {name:"Robux 800", price:299},
+  {name:"Gamepass", price:199}
+];
+
 let cart=[], total=0;
 
-/* ---------- SHOP ---------- */
+/* ===== โหลดสินค้า ===== */
+const box=document.getElementById("products");
+products.forEach(p=>{
+  box.innerHTML+=`
+  <div class="card">
+    <h3>${p.name}</h3>
+    <p>฿${p.price}</p>
+    <button onclick="add('${p.name}',${p.price})">ซื้อ</button>
+  </div>`;
+});
+
+/* ===== ตะกร้า ===== */
 function add(name,price){
   cart.push({name,price});
   total+=price;
   renderCart();
 }
-
 function renderCart(){
   document.getElementById("cart").innerHTML=
     cart.map(i=>`• ${i.name} ฿${i.price}`).join("<br>");
   document.getElementById("total").innerText="รวม ฿"+total;
 }
 
+/* ===== แจ้งโอน ===== */
 function finish(){
   const name=document.getElementById("customer").value||"ไม่ระบุ";
   const slip=document.getElementById("slip").files[0];
   if(!slip){alert("อัปโหลดสลิปก่อน");return;}
-
   const r=new FileReader();
   r.onload=()=>{
     let orders=JSON.parse(localStorage.getItem("orders")||"[]");
-    orders.push({
-      customer:name,
-      items:cart,
-      total:total,
-      slip:r.result,
-      time:new Date().toLocaleString()
-    });
+    orders.push({name,items:cart,total,slip:r.result,time:new Date().toLocaleString()});
     localStorage.setItem("orders",JSON.stringify(orders));
     document.getElementById("shop").classList.add("hidden");
     document.getElementById("thank").classList.remove("hidden");
@@ -167,38 +145,34 @@ function finish(){
   r.readAsDataURL(slip);
 }
 
-/* ---------- ADMIN ---------- */
+/* ===== ADMIN ===== */
 document.addEventListener("keydown",e=>{
   if(e.ctrlKey && e.key==="a"){
-    const pass=prompt("รหัสแอดมิน");
-    if(pass==="1234"){ // เปลี่ยนรหัสตรงนี้
+    if(prompt("รหัสแอดมิน")==="1234"){
       document.getElementById("shop").classList.add("hidden");
       document.getElementById("admin").classList.remove("hidden");
       loadOrders();
     }
   }
 });
-
 function loadOrders(){
   const data=JSON.parse(localStorage.getItem("orders")||"[]");
   const box=document.getElementById("orders");
   box.innerHTML="";
   data.forEach(o=>{
     box.innerHTML+=`
-      <div class="order">
-        👤 ${o.customer}<br>
-        📦 ${o.items.map(i=>i.name).join(", ")}<br>
-        💰 ฿${o.total}<br>
-        🕒 ${o.time}
-        <img src="${o.slip}">
-      </div>
-    `;
+    <div class="order">
+      👤 ${o.name}<br>
+      📦 ${o.items.map(i=>i.name).join(", ")}<br>
+      💰 ฿${o.total}<br>
+      🕒 ${o.time}
+      <img src="${o.slip}">
+    </div>`;
   });
 }
-
 function logout(){
-  document.getElementById("admin").classList.add("hidden");
-  document.getElementById("shop").classList.remove("hidden");
+  admin.classList.add("hidden");
+  shop.classList.remove("hidden");
 }
 </script>
 
