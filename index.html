@@ -1,138 +1,135 @@
-<!DOCTYPE html><html lang="th">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Game Item Shop</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Consolas, monospace;
-      background: #020216;
-      color: #00ffff;
-    }
-    header {
-      padding: 20px;
-      text-align: center;
-      border-bottom: 1px solid #00ffff55;
-      box-shadow: 0 0 15px #00ffff55;
-    }
-    h1 { margin: 0; }
-    .container {
-      padding: 30px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: #05052a;
-      border: 1px solid #00ffff;
-      box-shadow: 0 0 15px #00ffff55;
-      padding: 20px;
-      text-align: center;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 0 25px #00ffff;
-    }
-    .card img {
-      width: 100%;
-      height: 140px;
-      object-fit: cover;
-      margin-bottom: 10px;
-      border: 1px solid #00ffff55;
-    }
-    .price {
-      color: #ff00ff;
-      margin: 10px 0;
-      font-weight: bold;
-    }
-    button {
-      background: #00ffff;
-      color: #020216;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      width: 100%;
-      box-shadow: 0 0 15px #00ffff;
-    }
-    button:hover {
-      background: #99ffff;
-    }
-    footer {
-      padding: 15px;
-      text-align: center;
-      border-top: 1px solid #00ffff55;
-      margin-top: 30px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Login</title>
+
+<style>
+:root {
+  --neon-primary: #00ffff;
+  --neon-secondary: #ff00ff;
+  --dark-bg: #020216;
+  --mid-bg: #05052a;
+  --font-stack: Consolas, monospace;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: var(--neon-primary);
+  font-family: var(--font-stack);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.login-container {
+  width: 380px;
+  padding: 40px;
+  background-color: var(--mid-bg);
+  border: 2px solid var(--neon-primary);
+  box-shadow: 0 0 25px var(--neon-primary);
+}
+
+.system-title {
+  text-align: center;
+  font-size: 1.5em;
+  margin-bottom: 30px;
+  text-shadow: 0 0 10px var(--neon-primary);
+  border-bottom: 1px solid #00ffff55;
+  padding-bottom: 10px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--neon-secondary);
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--neon-primary);
+  color: #fff;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--neon-secondary);
+  box-shadow: 0 0 10px var(--neon-secondary);
+}
+
+.login-button {
+  width: 100%;
+  padding: 15px;
+  margin-top: 25px;
+  background: var(--neon-primary);
+  color: var(--dark-bg);
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 0 20px var(--neon-primary);
+}
+
+.login-button:hover {
+  background: #99ffff;
+}
+
+.status-message {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.8em;
+  color: var(--neon-secondary);
+}
+</style>
 </head>
-<body><header>
-  <h1>🧱 ROBLOX ITEM SHOP</h1>
-  <p>ร้านขายไอเทม & Robux สำหรับ Roblox</p>
-</header><div class="container">
-  <div class="card">
-    <img src="https://via.placeholder.com/300x140" />
-    <h3>Robux 400</h3>
-    <div class="price">฿15</div>
-    <button onclick="addToCart('Robux 400')">ซื้อเลย</button>
-  </div>  <div class="card">
-    <img src="https://via.placeholder.com/300x140" />
-    <h3>Robux 800</h3>
-    <div class="price">฿50</div>
-    <button onclick="addToCart('Robux 800')">ซื้อเลย</button>
-  </div>  <div class="card">
-    <img src="https://via.placeholder.com/300x140" />
-    <h3>Gamepass (กำหนดเอง)</h3>
-    <div class="price">฿25</div>
-    <button onclick="addToCart('Custom Gamepass')">ซื้อเลย</button>
-  </div>  <div class="card">
-    <img src="https://via.placeholder.com/300x140" />
-    <h3>VIP Server</h3>
-    <div class="price">฿35</div>
-    <button onclick="addToCart('VIP Server')">ซื้อเลย</button>
-  </div>
+
+<body>
+
+<div class="login-container">
+  <div class="system-title">ACCESS_FUTUR</div>
+
+  <form onsubmit="login(event)">
+    <div class="input-group">
+      <label>Mail / Users:</label>
+      <input type="text" required>
+    </div>
+
+    <div class="input-group">
+      <label>Password:</label>
+      <input type="password" id="password" required>
+    </div>
+
+    <button class="login-button">Log in</button>
+
+    <div class="status-message">
+      // SYSTEM STATUS: STANDBY_MODE
+    </div>
+  </form>
 </div>
-    <button onclick="addToCart('Diamond Pack')">ซื้อเลย</button>
-  </div>  <div class="card">
-    <img src="004999196194046_20260204_171653.jpeg" />
-    <h3>ของตึงๆc</h3>
-    <div class="price">฿29</div>
-    <button onclick="addToCart('Epic Skin')">ซื้อเลย</button>
-  </div>  <div class="card">
-    <img src="https://via.placeholder.com/300x140" />
-    <h3>Battle Pass</h3>
-    <div class="price">฿55</div>
-    <button onclick="addToCart('Battle Pass')">ซื้อเลย</button>
-  </div>
-</div><section style="padding:30px; max-width:500px; margin:auto;">
-  <h2>📦 ข้อมูลผู้สั่งซื้อ</h2>
-  <input id="rbx" placeholder="Username Roblox" style="width:100%;padding:10px;margin:10px 0;" />
-  <input id="dc" placeholder="Discord เช่น user#1234" style="width:100%;padding:10px;margin:10px 0;" />
-  <button onclick="submitOrder()">ส่งออเดอร์ไป Discord</button>
-</section><footer>
-  <p>© 2026 Roblox Shop</p>
-</footer><script>
-  let cart = [];
 
-  function addToCart(item) {
-    cart.push(item);
-    alert(item + ' ถูกเพิ่มลงตะกร้าแล้ว');
+<script>
+function login(e){
+  e.preventDefault();
+
+  const pass = document.getElementById("password").value;
+  const correct = "1234"; // ← เปลี่ยนรหัสตรงนี้ได้
+
+  if(pass === correct){
+    alert("ACCESS GRANTED");
+    window.location.href = "shop.html";
+  } else {
+    alert("ACCESS DENIED");
   }
+}
+</script>
 
-  function submitOrder() {
-    const username = document.getElementById('rbx').value;
-    const discord = document.getElementById('dc').value;
-
-    if (!username || !discord || cart.length === 0) {
-      alert('กรุณากรอกข้อมูลให้ครบ และเลือกสินค้า');
-      return;
-    }
-
-    const message = `Roblox Order%0AUser: ${username}%0ADiscord: ${discord}%0AItems: ${cart.join(', ')}`;
-    const webhook = 'PUT_DISCORD_WEBHOOK_URL_HERE';
-    window.open(`${webhook}?content=${message}`);
-  }
-</script></body>
+</body>
 </html>
