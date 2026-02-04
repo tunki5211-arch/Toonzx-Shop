@@ -4,66 +4,204 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ROBLOX SHOP</title>
-<link rel="stylesheet" href="style.css">
+
+<style>
+body{
+  margin:0;
+  font-family:Consolas, monospace;
+  background:#020216;
+  color:#00ffff;
+}
+header{
+  padding:15px;
+  text-align:center;
+  box-shadow:0 0 15px #00ffff;
+}
+.container{
+  padding:15px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:15px;
+}
+.card{
+  background:#05052a;
+  border:1px solid #00ffff;
+  padding:15px;
+  text-align:center;
+}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:8px;
+  background:#00ffff;
+  border:none;
+  font-weight:bold;
+}
+.bill, .qr, .admin{
+  margin:20px;
+  border:1px solid #00ffff;
+  padding:15px;
+}
+.hidden{display:none;}
+input, select{
+  width:100%;
+  padding:8px;
+  margin:5px 0;
+}
+.status-wait{color:yellow;}
+.status-done{color:#00ff00;}
+</style>
 </head>
+
 <body>
 
 <header>
-  <h1>🧱 ROBLOX ITEM SHOP</h1>
+<h2>🧱 ROBLOX ITEM SHOP</h2>
+<button onclick="openAdmin()">🔐 เข้าแอดมิน</button>
 </header>
 
+<!-- 🛒 ร้าน -->
 <div class="container" id="products"></div>
 
 <div class="bill">
-  <input id="coupon" placeholder="ใส่โค้ดคูปอง">
-  <button onclick="applyCoupon()">ใช้คูปอง</button>
-  <p id="msg"></p>
-  <h3>รวม: <span id="total">0</span> บาท</h3>
+<h3>🧾 บิลของคุณ</h3>
+<div id="cart"></div>
+<p>รวม: <span id="total">0</span> บาท</p>
+<input id="coupon" placeholder="คูปอง (เช่น VIP10)">
+<button onclick="applyCoupon()">ใช้คูปอง</button>
 </div>
 
-<script type="module">
-import { db } from "./firebase.js";
-import { collection, getDocs } from 
-"https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+<div class="qr">
+<h3>💸 PromptPay</h3>
+<p id="pp">0912345678</p>
+<button onclick="copyPP()">ก๊อปเลข PromptPay</button>
+<img src="qr.png" style="width:100%;margin-top:10px">
+<p>โอนแล้วอัปโหลดสลิป</p>
+<input type="file" id="slip">
+<button onclick="submitOrder()">ส่งออเดอร์</button>
+</div>
 
-let cart=[], total=0;
+<div class="hidden" id="thanks">
+<h2>✅ ขอบคุณสำหรับการสั่งซื้อ</h2>
+<p>โอนแล้วแอดมินจะตรวจสอบ</p>
+</div>
 
-const productsRef = await getDocs(collection(db,"products"));
-productsRef.forEach(doc=>{
-  const p = doc.data();
-  products.innerHTML += `
-  <div class="card">
-    <h3>${p.name}</h3>
-    <p>${p.price} บาท</p>
-    <button onclick='add("${p.name}",${p.price})'>ซื้อ</button>
-  </div>`;
+<!-- 🔐 ADMIN -->
+<div class="admin hidden" id="admin">
+<h3>🔐 หลังบ้าน</h3>
+<input id="adminPass" placeholder="รหัสแอดมิน">
+<button onclick="loginAdmin()">เข้า</button>
+
+<div id="adminPanel" class="hidden">
+<h4>📦 ออเดอร์</h4>
+<div id="orders"></div>
+<p>💰 ยอดขายรวม: <span id="sum"></span> บาท</p>
+</div>
+</div>
+
+<script>
+/* ---------- DATA ---------- */
+const PRODUCTS=[
+ {name:"Robux 400",price:150,hot:true},
+ {name:"VIP Server",price:99,hot:false},
+ {name:"Battle Pass",price:450,hot:true}
+];
+const ADMIN_PASS="1234";
+
+/* ---------- SHOP ---------- */
+let cart=[];
+let total=0;
+
+const products=document.getElementById("products");
+PRODUCTS.forEach(p=>{
+ products.innerHTML+=`
+ <div class="card">
+ <h4>${p.name}${p.hot?" ⭐":""}</h4>
+ <p>${p.price} บาท</p>
+ <button onclick="add('${p.name}',${p.price})">ซื้อ</button>
+ </div>`;
 });
 
-window.add = (name,price)=>{
-  cart.push({name,price});
-  total+=price;
-  totalEl();
-};
+function add(n,p){
+ cart.push({n,p});
+ total+=p;
+ renderCart();
+}
 
-function totalEl(){ total.innerText = total; }
+function renderCart(){
+ cartDiv.innerHTML="";
+ cart.forEach(i=>{
+  cartDiv.innerHTML+=`<p>${i.n} - ${i.p}</p>`;
+ });
+ totalEl.innerText=total;
+}
 
-window.applyCoupon = async()=>{
-  const code=coupon.value.toUpperCase();
-  const snap = await getDocs(collection(db,"coupons"));
-  snap.forEach(d=>{
-    const c=d.data();
-    if(c.code===code){
-      cart.forEach(i=>{
-        if(c.products.includes(i.name)){
-          i.price -= i.price*(c.discount/100);
-        }
-      });
-      total = cart.reduce((s,i)=>s+i.price,0);
-      msg.innerText="✅ ใช้คูปองแล้ว";
-      totalEl();
-    }
-  });
-};
+function applyCoupon(){
+ if(coupon.value==="VIP10"){
+   total*=0.9;
+   totalEl.innerText=Math.floor(total);
+ }
+}
+
+function copyPP(){
+ navigator.clipboard.writeText(pp.innerText);
+ alert("ก๊อปแล้ว");
+}
+
+function submitOrder(){
+ const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+ orders.push({
+   items:cart,
+   total:total,
+   status:"รอตรวจ"
+ });
+ localStorage.setItem("orders",JSON.stringify(orders));
+ document.body.innerHTML=thanks.innerHTML;
+}
+
+/* ---------- ADMIN ---------- */
+function openAdmin(){
+ admin.classList.toggle("hidden");
+}
+
+function loginAdmin(){
+ if(adminPass.value!==ADMIN_PASS)return alert("รหัสผิด");
+ adminPanel.classList.remove("hidden");
+ loadOrders();
+}
+
+function loadOrders(){
+ const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+ let sum=0;
+ ordersDiv.innerHTML="";
+ orders.forEach((o,i)=>{
+  sum+=o.total;
+  ordersDiv.innerHTML+=`
+  <div>
+   <p>${o.total} บาท -
+   <span class="${o.status==='รอตรวจ'?'status-wait':'status-done'}">${o.status}</span>
+   </p>
+   <button onclick="done(${i})">สำเร็จ</button>
+   <button onclick="del(${i})">ลบ</button>
+  </div>`;
+ });
+ sumEl.innerText=sum;
+}
+
+function done(i){
+ const orders=JSON.parse(localStorage.getItem("orders"));
+ orders[i].status="สำเร็จ";
+ localStorage.setItem("orders",JSON.stringify(orders));
+ loadOrders();
+}
+
+function del(i){
+ const orders=JSON.parse(localStorage.getItem("orders"));
+ orders.splice(i,1);
+ localStorage.setItem("orders",JSON.stringify(orders));
+ loadOrders();
+}
 </script>
+
 </body>
 </html>
