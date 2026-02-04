@@ -3,177 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Toonzx Roblox Shop</title>
-
+<title>ROBLOX SHOP</title>
 <style>
-:root{
-  --neon:#00ffff;
-  --bg:#020216;
-  --card:#05052a;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Consolas, monospace;
-  background:var(--bg);
-  color:var(--neon);
-}
-header{
-  padding:20px;
-  text-align:center;
-  box-shadow:0 0 20px var(--neon);
-}
-h1{margin:0}
-.container{
-  padding:20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:15px;
-}
-.card{
-  background:var(--card);
-  border:1px solid var(--neon);
-  padding:15px;
-  text-align:center;
-  box-shadow:0 0 10px #00ffff55;
-}
-button{
-  margin-top:10px;
-  width:100%;
-  padding:12px;
-  background:var(--neon);
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
-button:hover{box-shadow:0 0 15px var(--neon)}
-
-.cart{
-  margin:20px;
-  border:2px solid var(--neon);
-  padding:15px;
-}
-.cart-item{
-  display:flex;
-  justify-content:space-between;
-  margin:5px 0;
-}
-.total{
-  font-size:20px;
-  margin-top:10px;
-}
-
-.qr{
-  margin:30px auto;
-  max-width:280px;
-  text-align:center;
-  border:2px solid var(--neon);
-  padding:20px;
-}
-.qr img{width:100%}
-
-.notice{
-  text-align:center;
-  margin-top:10px;
-  color:#fff;
-}
-
-.hidden{display:none}
-
-@media(max-width:600px){
-  h1{font-size:20px}
-}
+body{margin:0;font-family:Consolas;background:#020216;color:#00ffff}
+header{text-align:center;padding:20px;box-shadow:0 0 15px #00ffff}
+.card{border:1px solid #00ffff;padding:15px;margin:10px}
+.featured{border:2px solid #ff00ff;box-shadow:0 0 15px #ff00ff}
+button{padding:10px;width:100%;background:#00ffff;border:none;font-weight:bold}
 </style>
 </head>
-
 <body>
 
 <header>
-  <h1>🧱 TOONZX ROBLOX SHOP</h1>
+<h1>🧱 ROBLOX ITEM SHOP</h1>
 </header>
 
-<!-- SHOP -->
-<div class="container" id="shop">
-  <div class="card">
-    <h3>Robux 400</h3>
-    <p>฿150</p>
-    <button onclick="addItem('Robux 400',150)">เพิ่ม</button>
-  </div>
+<div id="shop"></div>
 
-  <div class="card">
-    <h3>VIP Server</h3>
-    <p>฿99</p>
-    <button onclick="addItem('VIP Server',99)">เพิ่ม</button>
-  </div>
-
-  <div class="card">
-    <h3>Gamepass</h3>
-    <p>฿50</p>
-    <button onclick="addItem('Gamepass',50)">เพิ่ม</button>
-  </div>
-</div>
-
-<!-- CART -->
-<div class="cart">
-  <h3>🛒 ตะกร้า</h3>
-  <div id="cart"></div>
-  <div class="total">รวม: ฿<span id="total">0</span></div>
-</div>
-
-<!-- PAYMENT -->
-<div class="qr">
-  <h3>💸 PromptPay</h3>
-  <img src="qr.png" alt="PromptPay QR">
-  <p>เลข PromptPay</p>
-  <button onclick="copyPP()">📋 ก๊อปเลข</button>
-  <div class="notice">โอนแล้วให้ทักแอดมิน</div>
-  <button onclick="finish()">✅ แจ้งโอนแล้ว</button>
-</div>
-
-<!-- THANK YOU -->
-<div class="qr hidden" id="thank">
-  <h2>🙏 ขอบคุณที่อุดหนุน</h2>
-  <p>กรุณาทักแอดมินพร้อมสลิป</p>
-  <a href="#" onclick="location.reload()">
-    <button>กลับหน้าร้าน</button>
-  </a>
-</div>
+<hr>
+<h3>📤 อัปโหลดสลิป</h3>
+<input type="file" id="slip">
+<input id="customer" placeholder="ชื่อลูกค้า">
+<button onclick="checkout()">ยืนยัน</button>
 
 <script>
 let cart=[];
-let total=0;
-const ppNumber="0999999999"; // 👈 ใส่เลข PromptPay ตรงนี้
-
-function addItem(name,price){
-  cart.push({name,price});
-  total+=price;
-  render();
-}
-
-function render(){
-  const box=document.getElementById("cart");
-  box.innerHTML="";
-  cart.forEach(i=>{
-    box.innerHTML+=`<div class="cart-item">
-      <span>${i.name}</span>
-      <span>฿${i.price}</span>
-    </div>`;
+fetch("data.json").then(r=>r.json()).then(data=>{
+  const shop=document.getElementById("shop");
+  data.forEach(p=>{
+    shop.innerHTML+=`
+      <div class="card ${p.featured?'featured':''}">
+        <h3>${p.name}</h3>
+        <p>${p.price} บาท</p>
+        <button onclick="add('${p.name}',${p.price})">ซื้อ</button>
+      </div>`;
   });
-  document.getElementById("total").innerText=total;
+});
+
+function add(n,p){
+  cart.push({n,p});
+  alert("เพิ่มแล้ว");
 }
 
-function copyPP(){
-  navigator.clipboard.writeText(ppNumber);
-  alert("คัดลอกเลข PromptPay แล้ว");
-}
-
-function finish(){
-  document.getElementById("shop").classList.add("hidden");
-  document.querySelector(".cart").classList.add("hidden");
-  document.querySelector(".qr").classList.add("hidden");
-  document.getElementById("thank").classList.remove("hidden");
+function checkout(){
+  if(cart.length==0)return alert("ยังไม่เลือกสินค้า");
+  const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+  orders.push({
+    name:customer.value,
+    items:cart,
+    status:"รอตรวจ"
+  });
+  localStorage.setItem("orders",JSON.stringify(orders));
+  alert("โอนแล้วให้ทักแอดมิน");
+  cart=[];
 }
 </script>
-
 </body>
 </html>
