@@ -4,55 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ADMIN PANEL</title>
+
 <style>
 body{
   background:#020216;
   color:#00ffff;
   font-family:Consolas, monospace;
   margin:0;
-  padding:20px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
 }
-h1{text-align:center;}
-.order{
-  border:1px solid #00ffff;
+.box{
+  border:2px solid #00ffff;
+  padding:25px;
+  width:320px;
+  box-shadow:0 0 25px #00ffff;
+}
+input,button{
+  width:100%;
   padding:10px;
-  margin:10px 0;
+  margin-top:10px;
+  font-family:inherit;
 }
 button{
   background:#00ffff;
   border:none;
-  padding:5px 10px;
-  margin-top:5px;
+  font-weight:bold;
+}
+.order{
+  border:1px solid #00ffff;
+  padding:10px;
+  margin-top:10px;
 }
 </style>
 </head>
+
 <body>
 
-<h1>📦 ADMIN PANEL</h1>
-<div id="orders"></div>
+<div class="box" id="login">
+  <h3>🔐 ADMIN LOGIN</h3>
+  <input type="password" id="pass" placeholder="รหัสแอดมิน">
+  <button onclick="login()">เข้าสู่ระบบ</button>
+</div>
+
+<div class="box" id="panel" style="display:none">
+  <h3>📦 รายการสั่งซื้อ</h3>
+  <div id="orders"></div>
+</div>
 
 <script>
-let orders = JSON.parse(localStorage.getItem("orders") || "[]");
-const box = document.getElementById("orders");
+const PASSWORD="919921"; // 👈 เปลี่ยนรหัสตรงนี้
 
-if(orders.length === 0){
-  box.innerHTML = "❌ ยังไม่มีออเดอร์";
+function login(){
+  if(document.getElementById("pass").value===PASSWORD){
+    login.style.display="none";
+    panel.style.display="block";
+    loadOrders();
+  }else{
+    alert("รหัสผิด");
+  }
 }
 
-orders.forEach((o,i)=>{
-  box.innerHTML += `
-  <div class="order">
-    🧾 ${o.item}<br>
-    👤 ${o.user}<br>
-    ⏰ ${o.time}<br>
-    <button onclick="del(${i})">ลบ</button>
-  </div>`;
-});
-
-function del(i){
-  orders.splice(i,1);
-  localStorage.setItem("orders",JSON.stringify(orders));
-  location.reload();
+function loadOrders(){
+  const data=JSON.parse(localStorage.getItem("orders")||"[]");
+  const box=document.getElementById("orders");
+  if(data.length===0){
+    box.innerHTML="ยังไม่มีรายการ";
+    return;
+  }
+  data.forEach(o=>{
+    box.innerHTML+=`
+      <div class="order">
+        <b>${o.items}</b><br>
+        รวม ฿${o.total}<br>
+        ${o.time}
+      </div>`;
+  });
 }
 </script>
 
