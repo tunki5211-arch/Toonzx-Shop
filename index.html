@@ -45,13 +45,10 @@ button{
   border:2px solid #00ffff;
   padding:20px;
 }
-.qr img{
-  width:100%;
-}
+.qr img{ width:100%; }
 .notice{
   margin-top:10px;
   color:#ff00ff;
-  font-size:0.9em;
 }
 </style>
 </head>
@@ -62,55 +59,69 @@ button{
   <h1>🧱 ROBLOX ITEM SHOP</h1>
 </header>
 
-<!-- 🧩 เพิ่มสินค้าได้ง่าย แค่เพิ่ม div.card -->
+<!-- 🔹 สินค้า (เพิ่มง่าย แค่ก็อป card) -->
 <div class="container">
   <div class="card">
-    <h3>กำลังใจ</h3>
-    <p>฿15</p>
-    <button onclick="buy('Robux 400')">ซื้อ</button>
+    <h3>Robux 400</h3>
+    <p>฿150</p>
+    <button onclick="selectItem('Robux 400 - 150฿')">เลือกสินค้า</button>
   </div>
 
   <div class="card">
     <h3>VIP Server</h3>
     <p>฿99</p>
-    <button onclick="buy('VIP Server')">ซื้อ</button>
+    <button onclick="selectItem('VIP Server - 99฿')">เลือกสินค้า</button>
   </div>
 </div>
 
-<!-- 💸 PromptPay -->
+<!-- 🔹 PromptPay -->
 <div class="qr">
-  <h3>PromptPay</h3>
-
-  <!-- ใส่รูป QR ของคุณ -->
+  <h3>💸 PromptPay</h3>
   <img src="qr.png">
+  <p id="pp">0912345678</p>
 
-  <p id="pp">หมายเลข: 0648129492วอเลท ฐิติคุณ</p>
-
-  <!-- ✅ ปุ่มก๊อป -->
   <button onclick="copyPP()">ก๊อปเลข PromptPay</button>
+  <p class="notice">โอนแล้วให้ทักแอดมิน</p>
 
-  <!-- ✅ แจ้งเตือน -->
-  <div class="https://discord.gg/aWSKKgTG3">
-    โอนแล้วให้ทักแอดมินพร้อมสลิป
-  </div>
+  <hr style="border-color:#00ffff">
 
-  <!-- ไปหน้าขอบคุณ -->
-  <button onclick="goThanks()">โอนแล้ว</button>
+  <h3>📤 อัปโหลดสลิป</h3>
+  <input type="file" id="slip" accept="image/*">
+  <button onclick="sendSlip()">ส่งสลิป</button>
 </div>
 
 <script>
+let selectedItem = "";
+
+function selectItem(item){
+  selectedItem = item;
+  alert("เลือกสินค้า: " + item);
+}
+
 function copyPP(){
-  const text = document.getElementById("pp").innerText.replace("หมายเลข: ","");
-  navigator.clipboard.writeText(text);
+  navigator.clipboard.writeText("0912345678");
   alert("ก๊อปเลข PromptPay แล้ว");
 }
 
-function buy(item){
-  alert("คุณเลือก: " + item + "\\nโอนเงินแล้วกดปุ่ม 'โอนแล้ว'");
-}
+function sendSlip(){
+  const file = document.getElementById("slip").files[0];
+  if(!file || !selectedItem){
+    alert("กรุณาเลือกสินค้า และอัปโหลดสลิป");
+    return;
+  }
 
-function goThanks(){
-  window.location.href = "thankyou.html";
+  const reader = new FileReader();
+  reader.onload = function(){
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    orders.push({
+      item: selectedItem,
+      time: new Date().toLocaleString(),
+      slip: reader.result
+    });
+    localStorage.setItem("orders", JSON.stringify(orders));
+    window.location.href = "thankyou.html";
+  }
+  reader.readAsDataURL(file);
 }
 </script>
 
