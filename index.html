@@ -7,16 +7,20 @@
 
 <style>
 body{margin:0;font-family:Consolas;background:#020216;color:#00ffff}
-header{text-align:center;padding:20px;box-shadow:0 0 15px #00ffff}
+header{text-align:center;padding:20px;box-shadow:0 0 20px #00ffff}
 h2{text-align:center}
-.shop,.admin{padding:20px}
+.shop,.admin,.thank{padding:20px}
 .card{border:1px solid #00ffff;padding:15px;margin:10px}
 .featured{border:2px solid #ff00ff;box-shadow:0 0 15px #ff00ff}
 button{padding:10px;width:100%;background:#00ffff;border:none;font-weight:bold;margin-top:5px}
 input{width:100%;padding:10px;margin:5px 0}
 .hidden{display:none}
 .order{border:1px solid #00ffff;padding:10px;margin:10px}
-.total{margin:15px 0;font-size:18px;text-align:center}
+.cart{border:1px dashed #00ffff;padding:10px;margin:10px}
+.total{text-align:center;font-size:18px;margin:10px}
+.qr{border:2px solid #00ffff;padding:15px;text-align:center;max-width:260px;margin:auto}
+.qr img{width:100%}
+.copy{background:#ff00ff;color:white}
 </style>
 </head>
 
@@ -28,16 +32,32 @@ input{width:100%;padding:10px;margin:5px 0}
 </header>
 
 <!-- SHOP -->
-<div class="shop">
+<div class="shop" id="shopPage">
 <h2>🛒 สินค้า</h2>
 <div id="shop"></div>
 
+<h3>🧺 ตะกร้า</h3>
+<div id="cart"></div>
 <div class="total" id="total">ยอดรวม: 0 บาท</div>
 
+<div class="qr">
+<h3>💸 PromptPay</h3>
+<img src="qr.png">
+<p>เบอร์: 0648129492</p>
+<button class="copy" onclick="copyPP()">📋 ก๊อปเลข PromptPay</button>
+</div>
+
 <h3>📤 อัปโหลดสลิป</h3>
-<input id="customer" placeholder="ชื่อลูกค้า">
+<input id="customer" placeholder="ชื่อดิสลูกค้า">
 <input type="file" id="slip">
 <button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
+</div>
+
+<!-- THANK YOU -->
+<div class="thank hidden" id="thank">
+<h2>🙏 ขอบคุณสำหรับการสั่งซื้อ</h2>
+<p>โอนแล้วกรุณาทักแอดมิน</p>
+<button onclick="backShop()">กลับหน้าร้าน</button>
 </div>
 
 <!-- ADMIN -->
@@ -55,11 +75,15 @@ input{width:100%;padding:10px;margin:5px 0}
 <input id="pprice" placeholder="ราคา">
 <label><input type="checkbox" id="pfea"> สินค้าแนะนำ</label>
 <button onclick="addProduct()">เพิ่มสินค้า</button>
+
+<h3>🗑️ ลบสินค้า</h3>
+<div id="adminProducts"></div>
 </div>
 </div>
 
 <script>
 const ADMIN_PASSWORD="919921";
+const PP_NUMBER="0123456789";
 
 let products=JSON.parse(localStorage.getItem("products"))||[
  {name:"Robux 800",price:299,featured:true},
@@ -76,7 +100,7 @@ function renderShop(){
   <div class="card ${p.featured?'featured':''}">
    <h3>${p.name}</h3>
    <p>${p.price} บาท</p>
-   <button onclick="addCart(${i})">ซื้อ</button>
+   <button onclick="addCart(${i})">เพิ่ม</button>
   </div>`;
  });
  localStorage.setItem("products",JSON.stringify(products));
@@ -85,13 +109,34 @@ renderShop();
 
 function addCart(i){
  cart.push(products[i]);
+ renderCart();
+}
+
+function renderCart(){
+ cartDiv.innerHTML="";
+ cart.forEach((x,i)=>{
+  cartDiv.innerHTML+=`
+  <div class="cart">
+   ${x.name} - ${x.price} บาท
+   <button onclick="removeCart(${i})">ลบ</button>
+  </div>`;
+ });
  updateTotal();
- alert("เพิ่มสินค้าแล้ว");
+}
+
+function removeCart(i){
+ cart.splice(i,1);
+ renderCart();
 }
 
 function updateTotal(){
- let total=cart.reduce((s,x)=>s+x.price,0);
- document.getElementById("total").innerText="ยอดรวม: "+total+" บาท";
+ let t=cart.reduce((s,x)=>s+x.price,0);
+ total.innerText="ยอดรวม: "+t+" บาท";
+}
+
+function copyPP(){
+ navigator.clipboard.writeText(PP_NUMBER);
+ alert("ก๊อปเลข PromptPay แล้ว");
 }
 
 function checkout(){
@@ -104,9 +149,15 @@ function checkout(){
   status:"รอตรวจ"
  });
  localStorage.setItem("orders",JSON.stringify(orders));
- alert("โอนแล้วให้ทักแอดมิน");
+ shopPage.classList.add("hidden");
+ thank.classList.remove("hidden");
  cart=[];
- updateTotal();
+ renderCart();
+}
+
+function backShop(){
+ thank.classList.add("hidden");
+ shopPage.classList.remove("hidden");
 }
 
 function toggleAdmin(){
@@ -117,6 +168,7 @@ function login(){
  if(adminPass.value!==ADMIN_PASSWORD)return alert("รหัสผิด");
  panel.classList.remove("hidden");
  loadOrders();
+ renderAdminProducts();
 }
 
 function loadOrders(){
@@ -158,6 +210,27 @@ function addProduct(){
  pname.value=pprice.value="";
  pfea.checked=false;
  renderShop();
+ renderAdminProducts();
+}
+
+function renderAdminProducts(){
+ adminProducts.innerHTML="";
+ products.forEach((p,i)=>{
+  adminProducts.innerHTML+=`
+   <div class="order">
+    ${p.name} - ${p.price} บาท
+    <button onclick="deleteProduct(${i})">ลบ</button>
+   </div>`;
+ });
+}
+
+function deleteProduct(i){
+ if(confirm("ลบสินค้านี้?")){
+  products.splice(i,1);
+  localStorage.setItem("products",JSON.stringify(products));
+  renderShop();
+  renderAdminProducts();
+ }
 }
 </script>
 
