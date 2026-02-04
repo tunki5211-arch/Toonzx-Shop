@@ -36,10 +36,11 @@ button{
   background:#00ffff;
   border:none;
   font-weight:bold;
+  cursor:pointer;
 }
 .qr{
   margin:30px auto;
-  max-width:260px;
+  max-width:280px;
   text-align:center;
   border:2px solid #00ffff;
   padding:20px;
@@ -54,6 +55,11 @@ input{
   padding:20px;
   border-top:2px solid #00ffff;
 }
+.notice{
+  color:#ff00ff;
+  font-weight:bold;
+  margin:10px 0;
+}
 </style>
 </head>
 
@@ -66,10 +72,10 @@ input{
 <!-- ร้าน -->
 <div class="container" id="shop"></div>
 
-<!-- บิล -->
+<!-- ชำระเงิน -->
 <div class="qr">
-  <h3>PromptPay</h3>
-  <img src="qr.png">
+  <h3>💸 PromptPay</h3>
+  <img src="qr.png" style="width:100%">
   <p id="pp">0123456789</p>
   <button onclick="copyPP()">ก๊อปเลข PromptPay</button>
 
@@ -81,11 +87,12 @@ input{
 <!-- ขอบคุณ -->
 <div class="qr hidden" id="thanks">
   <h3>✅ ขอบคุณสำหรับการสั่งซื้อ</h3>
-  <p>รหัสออเดอร์:</p>
+  <p>รหัสออเดอร์</p>
   <h2 id="orderId"></h2>
+  <button onclick="downloadPDF()">🧾 ดาวน์โหลดใบเสร็จ PDF</button>
 </div>
 
-<!-- ลูกค้าเช็กสถานะ -->
+<!-- เช็กสถานะ -->
 <div class="qr">
   <input id="checkId" placeholder="กรอกรหัสออเดอร์">
   <button onclick="checkOrder()">เช็กสถานะ</button>
@@ -96,20 +103,27 @@ input{
 <div class="admin">
   <h2>🔐 Admin</h2>
   <input id="adminPass" placeholder="รหัสแอดมิน">
-  <button onclick="login()">เข้า</button>
+  <button onclick="login()">เข้าแอดมิน</button>
 
   <div id="panel" class="hidden">
+    <p id="notify" class="notice"></p>
     <h3>📦 ออเดอร์</h3>
     <div id="orders"></div>
-    <h3>📊 ยอดขายรวม: <span id="sum">0</span> บาท</h3>
+    <h3>💰 ยอดขายรวม: <span id="sum">0</span> บาท</h3>
     <canvas id="chart"></canvas>
   </div>
 </div>
 
+<audio id="notifySound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
 const ADMIN_PASSWORD="1234";
+
 const products=[
  {name:"Robux 400",price:150,hot:true},
  {name:"VIP Server",price:99,hot:false}
@@ -117,6 +131,7 @@ const products=[
 
 let orders=JSON.parse(localStorage.orders||"[]");
 
+/* แสดงสินค้า */
 shop.innerHTML=products.map(p=>`
 <div class="card">
   <h3>${p.hot?"⭐ ":""}${p.name}</h3>
@@ -125,50 +140,71 @@ shop.innerHTML=products.map(p=>`
 
 function copyPP(){
   navigator.clipboard.writeText(pp.innerText);
-  alert("คัดลอกแล้ว");
+  alert("คัดลอกเลข PromptPay แล้ว");
 }
 
 function checkout(){
+  if(!user.value){
+    alert("กรุณากรอก Username");
+    return;
+  }
   const id="RBX"+Date.now();
+  const total=products.reduce((s,p)=>s+p.price,0);
+
   orders.push({
     id,
     user:user.value,
-    total:products.reduce((s,p)=>s+p.price,0),
+    total,
     status:"รอตรวจ"
   });
+
   localStorage.orders=JSON.stringify(orders);
+  localStorage.newOrder="มีออเดอร์ใหม่ "+id;
+
   orderId.innerText=id;
   thanks.classList.remove("hidden");
 }
 
 function checkOrder(){
   const o=orders.find(x=>x.id===checkId.value);
-  status.innerText=o?o.status:"ไม่พบออเดอร์";
+  status.innerText=o?("สถานะ: "+o.status):"ไม่พบออเดอร์";
 }
 
+/* แอดมิน */
 function login(){
   if(adminPass.value===ADMIN_PASSWORD){
     panel.classList.remove("hidden");
     renderAdmin();
+  }else{
+    alert("รหัสไม่ถูกต้อง");
   }
 }
 
 function renderAdmin(){
-  ordersEl=orders.map(o=>`
-  <p>${o.id} - ${o.user} - ${o.status}
-  <button onclick="setStatus('${o.id}')">✔</button>
-  <button onclick="del('${o.id}')">🗑️</button></p>
+  ordersDiv.innerHTML=orders.map(o=>`
+    <p>
+      ${o.id} | ${o.user} | ${o.status} | ${o.total}฿
+      <button onclick="setStatus('${o.id}')">✔</button>
+      <button onclick="delOrder('${o.id}')">🗑️</button>
+    </p>
   `).join("");
-  ordersDiv.innerHTML=ordersEl;
 
-  const total=orders.reduce((s,o)=>s+o.total,0);
-  sum.innerText=total;
+  sum.innerText=orders.reduce((s,o)=>s+o.total,0);
+
+  if(localStorage.newOrder){
+    notify.innerText="🔔 "+localStorage.newOrder;
+    notifySound.play();
+    localStorage.removeItem("newOrder");
+  }
 
   new Chart(chart,{
     type:"bar",
     data:{
       labels:orders.map(o=>o.id),
-      datasets:[{data:orders.map(o=>o.total)}]
+      datasets:[{
+        label:"ยอดขาย",
+        data:orders.map(o=>o.total)
+      }]
     }
   });
 }
@@ -178,10 +214,26 @@ function setStatus(id){
   localStorage.orders=JSON.stringify(orders);
   renderAdmin();
 }
-function del(id){
+
+function delOrder(id){
   orders=orders.filter(o=>o.id!==id);
   localStorage.orders=JSON.stringify(orders);
   renderAdmin();
+}
+
+/* PDF */
+function downloadPDF(){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+  pdf.setFontSize(16);
+  pdf.text("ROBLOX ITEM SHOP",20,20);
+  pdf.setFontSize(12);
+  pdf.text("Order ID: "+orderId.innerText,20,40);
+  pdf.text("User: "+user.value,20,50);
+  pdf.text("ยอดรวม: "+products.reduce((s,p)=>s+p.price,0)+" บาท",20,60);
+  pdf.text("สถานะ: รอตรวจ",20,70);
+  pdf.text("ขอบคุณที่ใช้บริการ",20,90);
+  pdf.save("receipt-"+orderId.innerText+".pdf");
 }
 </script>
 
