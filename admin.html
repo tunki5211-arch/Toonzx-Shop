@@ -3,38 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADMIN PANEL</title>
+<title>ROBLOX SHOP</title>
 
 <style>
 body{
+  margin:0;
+  font-family:Consolas, monospace;
   background:#020216;
   color:#00ffff;
-  font-family:Consolas, monospace;
-  margin:0;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
 }
-.box{
-  border:2px solid #00ffff;
-  padding:25px;
-  width:320px;
-  box-shadow:0 0 25px #00ffff;
+.hidden{display:none}
+
+/* ---------- SHOP ---------- */
+header{
+  padding:20px;
+  text-align:center;
+  box-shadow:0 0 15px #00ffff;
 }
-input,button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  font-family:inherit;
+.container{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:15px;
+}
+.card{
+  background:#05052a;
+  border:1px solid #00ffff;
+  padding:15px;
+  text-align:center;
 }
 button{
+  margin-top:10px;
+  width:100%;
+  padding:10px;
   background:#00ffff;
   border:none;
   font-weight:bold;
+  cursor:pointer;
+}
+.cart, .qr, .thank{
+  margin:30px auto;
+  max-width:320px;
+  text-align:center;
+  border:2px solid #00ffff;
+  padding:20px;
+}
+
+/* ---------- ADMIN ---------- */
+.admin{
+  padding:20px;
 }
 .order{
   border:1px solid #00ffff;
+  padding:10px;
+  margin-bottom:15px;
+}
+.order img{
+  width:100%;
+  margin-top:10px;
+}
+input{
+  width:100%;
   padding:10px;
   margin-top:10px;
 }
@@ -43,45 +72,133 @@ button{
 
 <body>
 
-<div class="box" id="login">
-  <h3>🔐 ADMIN LOGIN</h3>
-  <input type="password" id="pass" placeholder="รหัสแอดมิน">
-  <button onclick="login()">เข้าสู่ระบบ</button>
+<!-- ================= SHOP ================= -->
+<div id="shop">
+
+<header>
+  <h1>🧱 ROBLOX ITEM SHOP</h1>
+</header>
+
+<div class="container">
+  <div class="card">
+    <h3>Robux 400</h3>
+    <p>฿150</p>
+    <button onclick="add('Robux 400',150)">ซื้อ</button>
+  </div>
+  <div class="card">
+    <h3>VIP Server</h3>
+    <p>฿99</p>
+    <button onclick="add('VIP Server',99)">ซื้อ</button>
+  </div>
 </div>
 
-<div class="box" id="panel" style="display:none">
-  <h3>📦 รายการสั่งซื้อ</h3>
-  <div id="orders"></div>
+<div class="cart">
+  <h3>🛒 ตะกร้า</h3>
+  <div id="cart"></div>
+  <p id="total"></p>
+
+  <input id="customer" placeholder="ชื่อลูกค้า / Roblox">
+  <input type="file" id="slip" accept="image/*">
+
+  <button onclick="finish()">แจ้งโอนแล้ว</button>
+</div>
+
+<div class="qr">
+  <h3>PromptPay</h3>
+  <img src="qr.png">
+  <p>สแกนเพื่อชำระเงิน</p>
+</div>
+
+<div class="thank hidden" id="thank">
+  <h2>✅ ขอบคุณครับ</h2>
+  <p>แอดมินจะติดต่อกลับเร็ว ๆ นี้</p>
+</div>
+
+</div>
+
+<!-- ================= ADMIN ================= -->
+<div id="admin" class="hidden">
+  <header>
+    <h1>🔐 ADMIN PANEL</h1>
+  </header>
+
+  <div class="admin">
+    <button onclick="logout()">ออกจากแอดมิน</button>
+    <h3>📦 รายการออเดอร์</h3>
+    <div id="orders"></div>
+  </div>
 </div>
 
 <script>
-const PASSWORD="919921"; // 👈 เปลี่ยนรหัสตรงนี้
+let cart=[], total=0;
 
-function login(){
-  if(document.getElementById("pass").value===PASSWORD){
-    login.style.display="none";
-    panel.style.display="block";
-    loadOrders();
-  }else{
-    alert("รหัสผิด");
-  }
+/* ---------- SHOP ---------- */
+function add(name,price){
+  cart.push({name,price});
+  total+=price;
+  renderCart();
 }
+
+function renderCart(){
+  document.getElementById("cart").innerHTML=
+    cart.map(i=>`• ${i.name} ฿${i.price}`).join("<br>");
+  document.getElementById("total").innerText="รวม ฿"+total;
+}
+
+function finish(){
+  const name=document.getElementById("customer").value||"ไม่ระบุ";
+  const slip=document.getElementById("slip").files[0];
+  if(!slip){alert("อัปโหลดสลิปก่อน");return;}
+
+  const r=new FileReader();
+  r.onload=()=>{
+    let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+    orders.push({
+      customer:name,
+      items:cart,
+      total:total,
+      slip:r.result,
+      time:new Date().toLocaleString()
+    });
+    localStorage.setItem("orders",JSON.stringify(orders));
+    document.getElementById("shop").classList.add("hidden");
+    document.getElementById("thank").classList.remove("hidden");
+  }
+  r.readAsDataURL(slip);
+}
+
+/* ---------- ADMIN ---------- */
+document.addEventListener("keydown",e=>{
+  if(e.ctrlKey && e.key==="a"){
+    const pass=prompt("รหัสแอดมิน");
+    if(pass==="1234"){ // เปลี่ยนรหัสตรงนี้
+      document.getElementById("shop").classList.add("hidden");
+      document.getElementById("admin").classList.remove("hidden");
+      loadOrders();
+    }
+  }
+});
 
 function loadOrders(){
   const data=JSON.parse(localStorage.getItem("orders")||"[]");
   const box=document.getElementById("orders");
-  if(data.length===0){
-    box.innerHTML="ยังไม่มีรายการ";
-    return;
-  }
+  box.innerHTML="";
   data.forEach(o=>{
     box.innerHTML+=`
       <div class="order">
-        <b>${o.items}</b><br>
-        รวม ฿${o.total}<br>
-        ${o.time}
-      </div>`;
+        👤 ${o.customer}<br>
+        📦 ${o.items.map(i=>i.name).join(", ")}<br>
+        💰 ฿${o.total}<br>
+        🕒 ${o.time}
+        <img src="${o.slip}">
+      </div>
+    `;
   });
+}
+
+function logout(){
+  document.getElementById("admin").classList.add("hidden");
+  document.getElementById("shop").classList.remove("hidden");
 }
 </script>
 
