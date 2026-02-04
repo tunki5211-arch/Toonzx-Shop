@@ -1,57 +1,197 @@
-<!-- ADMIN PANEL -->
-<div id="admin" style="display:none;background:#020216;color:#00ffff;min-height:100vh">
-  <header style="padding:20px;text-align:center;box-shadow:0 0 15px #00ffff">
-    <h1>🔐 ADMIN PANEL</h1>
-    <button onclick="logout()" style="margin-top:10px">ออกจากแอดมิน</button>
-  </header>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROBLOX SHOP</title>
 
-  <div style="padding:20px">
-    <h2>📦 ออเดอร์ทั้งหมด</h2>
-    <div id="orders"></div>
+<style>
+body{
+  margin:0;
+  font-family:Consolas, monospace;
+  background:#020216;
+  color:#00ffff;
+}
+header{
+  padding:20px;
+  text-align:center;
+  box-shadow:0 0 20px #00ffff;
+}
+.container{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:15px;
+}
+.card{
+  background:#05052a;
+  border:1px solid #00ffff;
+  padding:15px;
+  text-align:center;
+  box-shadow:0 0 15px #00ffff55;
+}
+button{
+  margin-top:10px;
+  width:100%;
+  padding:10px;
+  background:#00ffff;
+  border:none;
+  font-weight:bold;
+}
+.qr{
+  margin:30px auto;
+  max-width:260px;
+  text-align:center;
+  border:2px solid #00ffff;
+  padding:20px;
+  box-shadow:0 0 20px #00ffff;
+}
+input{
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+}
+#admin{
+  display:none;
+  padding:20px;
+}
+.admin-btn{
+  position:fixed;
+  bottom:15px;
+  right:15px;
+  background:#ff00ff;
+  color:#020216;
+  padding:12px 18px;
+  border:none;
+  box-shadow:0 0 20px #ff00ff;
+  font-weight:bold;
+  z-index:999;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🧱 ROBLOX ITEM SHOP</h1>
+</header>
+
+<!-- ร้าน -->
+<div id="shop">
+
+<div class="container">
+  <div class="card">
+    <h3>Robux 400</h3>
+    <p>฿150</p>
+    <button onclick="addItem('Robux 400',150)">ซื้อ</button>
+  </div>
+
+  <div class="card">
+    <h3>VIP Server</h3>
+    <p>฿99</p>
+    <button onclick="addItem('VIP Server',99)">ซื้อ</button>
   </div>
 </div>
 
+<div style="max-width:300px;margin:auto">
+  <input id="name" placeholder="ชื่อผู้ซื้อ">
+  <input type="file" id="slip">
+  <button onclick="submitOrder()">แจ้งโอน</button>
+</div>
+
+<div class="qr">
+  <h3>PromptPay</h3>
+  <img src="qr.png">
+  <p>สแกนเพื่อชำระเงิน</p>
+  <button onclick="copyPP()">ก๊อปเลข PromptPay</button>
+</div>
+
+</div>
+
+<!-- แอดมิน -->
+<div id="admin">
+  <h2>🔐 หลังบ้านแอดมิน</h2>
+  <div id="orders"></div>
+</div>
+
+<button class="admin-btn" onclick="adminLogin()">🔐 แอดมิน</button>
+
 <script>
-/* ===== เข้าแอดมิน ===== */
-document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.key === "a") {
-    const pass = prompt("ใส่รหัสแอดมิน");
-    if (pass === "1234") {
-      document.body.querySelectorAll("body > *").forEach(el => el.style.display="none");
-      document.getElementById("admin").style.display="block";
-      loadOrders();
-    } else {
-      alert("รหัสไม่ถูกต้อง");
-    }
-  }
-});
+const ADMIN_PASS = "1234";
+let cart=[];
 
-/* ===== โหลดออเดอร์ ===== */
-function loadOrders(){
-  const data = JSON.parse(localStorage.getItem("orders") || "[]");
-  const box = document.getElementById("orders");
-  box.innerHTML = "";
+function addItem(name,price){
+  cart.push({name,price});
+  alert("เพิ่มสินค้าแล้ว");
+}
 
-  if(data.length === 0){
-    box.innerHTML = "<p>ยังไม่มีออเดอร์</p>";
+function copyPP(){
+  navigator.clipboard.writeText("0123456789");
+  alert("คัดลอกเลข PromptPay แล้ว");
+}
+
+function submitOrder(){
+  const name=document.getElementById("name").value;
+  const file=document.getElementById("slip").files[0];
+  if(!name || !file || cart.length===0){
+    alert("กรอกข้อมูลให้ครบ");
     return;
   }
 
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+    orders.push({
+      name,
+      items:cart,
+      total:cart.reduce((s,i)=>s+i.price,0),
+      slip:reader.result,
+      status:"รอตรวจ",
+      time:new Date().toLocaleString()
+    });
+    localStorage.setItem("orders",JSON.stringify(orders));
+    alert("ส่งออเดอร์แล้ว");
+    cart=[];
+  };
+  reader.readAsDataURL(file);
+}
+
+function adminLogin(){
+  const pass=prompt("รหัสแอดมิน");
+  if(pass===ADMIN_PASS){
+    document.getElementById("shop").style.display="none";
+    document.getElementById("admin").style.display="block";
+    loadOrders();
+  }else alert("รหัสผิด");
+}
+
+function loadOrders(){
+  const data=JSON.parse(localStorage.getItem("orders")||"[]");
+  const box=document.getElementById("orders");
+  box.innerHTML="";
   data.forEach((o,i)=>{
-    box.innerHTML += `
+    box.innerHTML+=`
       <div style="border:1px solid #00ffff;padding:15px;margin-bottom:15px">
-        <b>👤 ลูกค้า:</b> ${o.name}<br>
-        <b>📦 สินค้า:</b> ${o.items.map(x=>x.name).join(", ")}<br>
-        <b>💰 ยอด:</b> ฿${o.total}<br>
-        <b>🕒 เวลา:</b> ${o.time}<br>
+        👤 ${o.name}<br>
+        📦 ${o.items.map(x=>x.name).join(", ")}<br>
+        💰 ฿${o.total}<br>
+        🕒 ${o.time}<br>
+        📌 <b>${o.status}</b><br>
+        <button onclick="setStatus(${i},'สำเร็จ')">✅ สำเร็จ</button>
+        <button onclick="setStatus(${i},'รอตรวจ')">⏳ รอตรวจ</button>
         <img src="${o.slip}" style="width:100%;margin-top:10px">
       </div>
     `;
   });
 }
 
-/* ===== ออกจากแอดมิน ===== */
-function logout(){
-  location.reload();
+function setStatus(i,s){
+  const data=JSON.parse(localStorage.getItem("orders"));
+  data[i].status=s;
+  localStorage.setItem("orders",JSON.stringify(data));
+  loadOrders();
 }
 </script>
+
+</body>
+</html>
