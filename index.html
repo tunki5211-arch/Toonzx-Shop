@@ -3,10 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <title>Toonzx Shop</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+    .box {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: auto;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      background: #00ff88;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    footer {
+      margin-top: 30px;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+  </style>
 </head>
-<body style="background:#111;color:#fff;font-family:sans-serif;text-align:center;">
-  <h1>🛒 Toonzx Shop</h1>
-  <p>ขายไอเทม Roblox / Robux</p>
-  <p>ติดต่อ Discord</p>
+<body>
+
+  <!-- 1. หัวเว็บ -->
+  <h1>Toonzx Shop</h1>
+  <p>ร้านขายของ Roblox | รหัสร้าน: <b>1234</b></p>
+
+  <div class="box">
+    <!-- 2. สินค้า -->
+    <h2>สินค้า Roblox</h2>
+    <p>ไอเทมพิเศษ | โค้ดสินค้า: <b>1234</b></p>
+
+    <!-- 3. ปุ่ม -->
+    <button onclick="alert('สั่งซื้อด้วยรหัส 1234')">
+      ซื้อสินค้า (1234)
+    </button>
+
+    <!-- 4. Discord -->
+    <p style="margin-top:20px;">
+      ติดต่อ Discord: <b>1234</b>
+    </p>
+  </div>
+
+  <footer>
+    © 2026 Toonzx Shop | Code: 1234
+  </footer>
+
 </body>
 </html>
