@@ -16,7 +16,7 @@ button{padding:10px;width:100%;background:#00ffff;border:none;font-weight:bold;m
 input{width:100%;padding:10px;margin:5px 0}
 .hidden{display:none}
 .order{border:1px solid #00ffff;padding:10px;margin:10px}
-.qr{margin:20px auto;padding:15px;border:2px solid #00ffff;max-width:260px;text-align:center}
+.total{margin:15px 0;font-size:18px;text-align:center}
 </style>
 </head>
 
@@ -32,24 +32,18 @@ input{width:100%;padding:10px;margin:5px 0}
 <h2>🛒 สินค้า</h2>
 <div id="shop"></div>
 
+<div class="total" id="total">ยอดรวม: 0 บาท</div>
+
 <h3>📤 อัปโหลดสลิป</h3>
 <input id="customer" placeholder="ชื่อลูกค้า">
 <input type="file" id="slip">
-
-<div class="qr">
-  <h3>💸 PromptPay</h3>
-  <div id="totalPrice">ยอดรวม: 0 บาท</div>
-  <img id="qrImg">
-  <p>สแกนเพื่อโอนเงิน</p>
-</div>
-
 <button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
 </div>
 
 <!-- ADMIN -->
 <div class="admin hidden" id="admin">
 <h2>🔐 ADMIN</h2>
-<input id="adminPass" type="password" placeholder="รหัสแอดมินสุดหล่อ">
+<input id="adminPass" type="password" placeholder="รหัสแอดมิน">
 <button onclick="login()">เข้าแอดมิน</button>
 
 <div id="panel" class="hidden">
@@ -64,10 +58,8 @@ input{width:100%;padding:10px;margin:5px 0}
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
 const ADMIN_PASSWORD="919921";
-const PROMPTPAY_ID="0648129492 วอเล็ต ฐิติคุณ; // 🔥 ใส่ PromptPay คุณ
 
 let products=JSON.parse(localStorage.getItem("products"))||[
  {name:"Robux 800",price:299,featured:true},
@@ -93,37 +85,33 @@ renderShop();
 
 function addCart(i){
  cart.push(products[i]);
- updateQR();
+ updateTotal();
  alert("เพิ่มสินค้าแล้ว");
 }
 
-function updateQR(){
+function updateTotal(){
  let total=cart.reduce((s,x)=>s+x.price,0);
- totalPrice.innerText="ยอดรวม: "+total+" บาท";
- if(total===0){qrImg.src="";return;}
-
- let payload=
-`00020101021229370016A000000677010111${PROMPTPAY_ID.length.toString().padStart(2,"0")}${PROMPTPAY_ID}5802TH530376454${total.toFixed(2).replace(".","")}6304`;
-
- QRCode.toDataURL(payload,(e,url)=>qrImg.src=url);
+ document.getElementById("total").innerText="ยอดรวม: "+total+" บาท";
 }
 
 function checkout(){
  if(cart.length==0)return alert("ยังไม่เลือกสินค้า");
  let orders=JSON.parse(localStorage.getItem("orders"))||[];
  orders.push({
-  name:customer.value,
+  name:customer.value||"-",
   items:cart,
-  status:"รอตรวจ",
-  slip:slip.files[0]?.name||"-"
+  slip:slip.files[0]?.name||"-",
+  status:"รอตรวจ"
  });
  localStorage.setItem("orders",JSON.stringify(orders));
  alert("โอนแล้วให้ทักแอดมิน");
  cart=[];
- updateQR();
+ updateTotal();
 }
 
-function toggleAdmin(){admin.classList.toggle("hidden");}
+function toggleAdmin(){
+ admin.classList.toggle("hidden");
+}
 
 function login(){
  if(adminPass.value!==ADMIN_PASSWORD)return alert("รหัสผิด");
