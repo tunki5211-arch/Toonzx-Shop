@@ -1,92 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>System Login</title>
+<title>ACCESS_FUTUR</title>
 
 <style>
-:root {
-  --neon-primary: #00ffff;
-  --neon-secondary: #ff00ff;
-  --dark-bg: #020216;
-  --mid-bg: #05052a;
-  --font-stack: Consolas, monospace;
+:root{
+  --neon:#00ffff;
+  --pink:#ff00ff;
+  --bg:#020216;
+  --mid:#05052a;
 }
 
-body {
-  background-color: var(--dark-bg);
-  color: var(--neon-primary);
-  font-family: var(--font-stack);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:var(--bg);
+  color:var(--neon);
+  font-family:Consolas, monospace;
+  overflow:hidden;
 }
 
-.login-container {
-  width: 380px;
-  padding: 40px;
-  background-color: var(--mid-bg);
-  border: 2px solid var(--neon-primary);
-  box-shadow: 0 0 25px var(--neon-primary);
+/* scanline */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.03),
+    rgba(255,255,255,0.03) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events:none;
 }
 
-.system-title {
-  text-align: center;
-  font-size: 1.5em;
-  margin-bottom: 30px;
-  text-shadow: 0 0 10px var(--neon-primary);
-  border-bottom: 1px solid #00ffff55;
-  padding-bottom: 10px;
+.login-container{
+  width:380px;
+  padding:40px;
+  background:var(--mid);
+  border:2px solid var(--neon);
+  box-shadow:0 0 30px var(--neon);
+  position:relative;
+  animation:glitch 2s infinite;
 }
 
-.input-group {
-  margin-bottom: 20px;
+@keyframes glitch{
+  0%{transform:none}
+  20%{transform:skewX(0.5deg)}
+  40%{transform:skewX(-0.5deg)}
+  60%{transform:none}
 }
 
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--neon-secondary);
+.system-title{
+  text-align:center;
+  font-size:1.6em;
+  margin-bottom:25px;
+  text-shadow:0 0 15px var(--neon);
+  border-bottom:1px solid #00ffff55;
+  padding-bottom:10px;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  background: rgba(0,0,0,0.4);
-  border: 1px solid var(--neon-primary);
-  color: #fff;
-  outline: none;
+.input-group{margin-bottom:18px}
+
+label{
+  display:block;
+  margin-bottom:6px;
+  color:var(--pink);
 }
 
-input:focus {
-  border-color: var(--neon-secondary);
-  box-shadow: 0 0 10px var(--neon-secondary);
+input{
+  width:100%;
+  padding:10px;
+  background:#0008;
+  border:1px solid var(--neon);
+  color:#fff;
+  outline:none;
 }
 
-.login-button {
-  width: 100%;
-  padding: 15px;
-  margin-top: 25px;
-  background: var(--neon-primary);
-  color: var(--dark-bg);
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 0 20px var(--neon-primary);
+input:focus{
+  border-color:var(--pink);
+  box-shadow:0 0 10px var(--pink);
 }
 
-.login-button:hover {
-  background: #99ffff;
+.login-button{
+  width:100%;
+  padding:14px;
+  margin-top:20px;
+  background:var(--neon);
+  color:#020216;
+  border:none;
+  font-weight:bold;
+  cursor:pointer;
+  box-shadow:0 0 20px var(--neon);
 }
 
-.status-message {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 0.8em;
-  color: var(--neon-secondary);
+.login-button:hover{
+  background:#99ffff;
+}
+
+.status{
+  text-align:center;
+  margin-top:20px;
+  font-size:.8em;
+  color:var(--pink);
 }
 </style>
 </head>
@@ -98,34 +120,38 @@ input:focus {
 
   <form onsubmit="login(event)">
     <div class="input-group">
-      <label>Mail / Users:</label>
-      <input type="text" required>
+      <label>Discord</label>
+      <input id="discord" placeholder="ใส่ 1234 ได้" required>
     </div>
 
     <div class="input-group">
-      <label>Password:</label>
+      <label>Password</label>
       <input type="password" id="password" required>
     </div>
 
-    <button class="login-button">Log in</button>
+    <button class="login-button">LOG IN</button>
 
-    <div class="status-message">
-      // SYSTEM STATUS: STANDBY_MODE
-    </div>
+    <div class="status">// SYSTEM READY</div>
   </form>
 </div>
 
 <script>
+/* ปิดคลิกขวา + inspect */
+document.addEventListener("contextmenu",e=>e.preventDefault());
+document.addEventListener("keydown",e=>{
+  if(e.key==="F12"|| (e.ctrlKey && e.shiftKey && e.key==="I")) e.preventDefault();
+});
+
 function login(e){
   e.preventDefault();
 
   const pass = document.getElementById("password").value;
-  const correct = "1234"; // ← เปลี่ยนรหัสตรงนี้ได้
+  const discord = document.getElementById("discord").value;
 
-  if(pass === correct){
+  if(pass==="919921" && discord.length>0){
     alert("ACCESS GRANTED");
-    window.location.href = "shop.html";
-  } else {
+    window.location.href="shop.html";
+  }else{
     alert("ACCESS DENIED");
   }
 }
