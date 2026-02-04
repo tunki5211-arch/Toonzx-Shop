@@ -15,7 +15,7 @@ body{
 header{
   padding:20px;
   text-align:center;
-  box-shadow:0 0 20px #00ffff;
+  box-shadow:0 0 15px #00ffff;
 }
 .container{
   padding:20px;
@@ -28,7 +28,20 @@ header{
   border:1px solid #00ffff;
   padding:15px;
   text-align:center;
-  box-shadow:0 0 15px #00ffff55;
+  position:relative;
+}
+.featured{
+  border:2px solid #ff00ff;
+  box-shadow:0 0 20px #ff00ff;
+}
+.badge{
+  position:absolute;
+  top:-10px;
+  right:-10px;
+  background:#ff00ff;
+  color:#000;
+  padding:5px 10px;
+  font-weight:bold;
 }
 button{
   margin-top:10px;
@@ -37,39 +50,21 @@ button{
   background:#00ffff;
   border:none;
   font-weight:bold;
+  cursor:pointer;
 }
-input{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-}
-.qr{
-  margin:30px auto;
-  max-width:260px;
-  text-align:center;
-  border:2px solid #00ffff;
+.cart{
   padding:20px;
-  box-shadow:0 0 20px #00ffff;
+  border-top:2px solid #00ffff;
 }
-#admin{
+.admin{
   display:none;
   padding:20px;
+  border-top:2px solid #ff00ff;
 }
-.admin-btn{
-  position:fixed;
-  bottom:15px;
-  right:15px;
-  background:#ff00ff;
-  color:#020216;
-  padding:12px 18px;
-  border:none;
-  box-shadow:0 0 20px #ff00ff;
-  font-weight:bold;
-  z-index:999;
-}
-.filter button{
-  width:auto;
-  margin-right:5px;
+.order{
+  border:1px solid #00ffff;
+  padding:10px;
+  margin-bottom:10px;
 }
 </style>
 </head>
@@ -78,12 +73,18 @@ input{
 
 <header>
   <h1>🧱 ROBLOX ITEM SHOP</h1>
+  <button onclick="toggleAdmin()">🔐 เข้าแอดมิน</button>
 </header>
 
 <!-- SHOP -->
-<div id="shop">
-
 <div class="container">
+  <div class="card featured">
+    <div class="badge">⭐ แนะนำ</div>
+    <h3>Robux 800</h3>
+    <p>฿299</p>
+    <button onclick="addItem('Robux 800',299)">ซื้อ</button>
+  </div>
+
   <div class="card">
     <h3>Robux 400</h3>
     <p>฿150</p>
@@ -97,128 +98,91 @@ input{
   </div>
 </div>
 
-<div style="max-width:320px;margin:auto">
-  <input id="name" placeholder="ชื่อผู้ซื้อ">
-  <input type="file" id="slip">
-  <button onclick="submitOrder()">แจ้งโอน</button>
-</div>
-
-<div class="qr">
-  <h3>PromptPay</h3>
-  <img src="qr.png">
-  <p>สแกนเพื่อชำระเงิน</p>
-  <button onclick="copyPP()">ก๊อปเลข PromptPay</button>
-</div>
-
+<!-- CART -->
+<div class="cart">
+  <h3>🛒 ตะกร้าสินค้า</h3>
+  <div id="cartList"></div>
+  <p>💰 รวม: <b id="total">0</b> บาท</p>
+  <input id="name" placeholder="ชื่อลูกค้า" style="width:100%;padding:8px">
+  <button onclick="checkout()">ยืนยันออเดอร์</button>
 </div>
 
 <!-- ADMIN -->
-<div id="admin">
-  <h2>🔐 หลังบ้านแอดมิน</h2>
+<div class="admin" id="admin">
+  <h2>🔐 Admin Panel</h2>
 
-  <div class="filter">
-    <button onclick="filterStatus('all')">📋 ทั้งหมด</button>
-    <button onclick="filterStatus('รอตรวจ')">⏳ รอตรวจ</button>
-    <button onclick="filterStatus('สำเร็จ')">✅ สำเร็จ</button>
+  <div style="border:1px solid #00ffff;padding:10px;margin-bottom:15px">
+    <p>📦 ออเดอร์ทั้งหมด: <b id="orderCount">0</b></p>
+    <p>💰 ยอดขายรวม: <b id="totalSales">0</b> บาท</p>
   </div>
 
-  <div id="orders"></div>
+  <div id="orderList"></div>
 </div>
 
-<button class="admin-btn" onclick="adminLogin()">🔐 แอดมิน</button>
-
 <script>
-const ADMIN_PASS = "1234";
-let cart = [];
-let currentFilter = "all";
+let cart=[];
 
 function addItem(name,price){
   cart.push({name,price});
-  alert("เพิ่มสินค้าแล้ว");
+  renderCart();
 }
 
-function copyPP(){
-  navigator.clipboard.writeText("0123456789");
-  alert("คัดลอกเลข PromptPay แล้ว");
+function renderCart(){
+  const box=document.getElementById("cartList");
+  let total=0;
+  box.innerHTML="";
+  cart.forEach(i=>{
+    total+=i.price;
+    box.innerHTML+=`<div>${i.name} - ${i.price}฿</div>`;
+  });
+  document.getElementById("total").innerText=total;
 }
 
-function submitOrder(){
-  const name = document.getElementById("name").value;
-  const file = document.getElementById("slip").files[0];
-  if(!name || !file || cart.length===0){
-    alert("กรอกข้อมูลให้ครบ");
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = ()=>{
-    const orders = JSON.parse(localStorage.getItem("orders")||"[]");
-    orders.push({
-      name,
-      items:cart,
-      total:cart.reduce((s,i)=>s+i.price,0),
-      slip:reader.result,
-      status:"รอตรวจ",
-      time:new Date().toLocaleString()
-    });
-    localStorage.setItem("orders",JSON.stringify(orders));
-    alert("ส่งออเดอร์แล้ว");
-    cart=[];
-  };
-  reader.readAsDataURL(file);
+function checkout(){
+  const name=document.getElementById("name").value;
+  if(!name||cart.length==0){alert("กรอกชื่อและเลือกสินค้า");return;}
+  const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+  const total=cart.reduce((s,i)=>s+i.price,0);
+  orders.push({name,items:cart.map(i=>i.name),total,status:"รอตรวจ"});
+  localStorage.setItem("orders",JSON.stringify(orders));
+  cart=[];
+  renderCart();
+  alert("โอนแล้วให้ทักแอดมิน");
 }
 
-function adminLogin(){
-  const pass = prompt("รหัสแอดมิน");
-  if(pass===ADMIN_PASS){
-    document.getElementById("shop").style.display="none";
-    document.getElementById("admin").style.display="block";
-    loadOrders();
-  }else alert("รหัสผิด");
-}
-
-function filterStatus(s){
-  currentFilter = s;
+function toggleAdmin(){
+  const a=document.getElementById("admin");
+  a.style.display=a.style.display==="block"?"none":"block";
   loadOrders();
 }
 
 function loadOrders(){
-  const data = JSON.parse(localStorage.getItem("orders")||"[]");
-  const box = document.getElementById("orders");
+  const box=document.getElementById("orderList");
+  const orders=JSON.parse(localStorage.getItem("orders")||"[]");
   box.innerHTML="";
-  data.forEach((o,i)=>{
-    if(currentFilter!=="all" && o.status!==currentFilter) return;
+  let sum=0;
+  document.getElementById("orderCount").innerText=orders.length;
+
+  orders.forEach((o,i)=>{
+    sum+=o.total;
     box.innerHTML+=`
-      <div style="border:1px solid #00ffff;padding:15px;margin:15px 0">
-        👤 <b>${o.name}</b><br>
-        📦 ${o.items.map(x=>x.name).join(", ")}<br>
-        💰 ฿${o.total}<br>
-        🕒 ${o.time}<br>
-        📌 <b style="color:${o.status==='สำเร็จ'?'#39ff14':'#ff00ff'}">${o.status}</b><br><br>
-
-        <button onclick="setStatus(${i},'สำเร็จ')">✅ สำเร็จ</button>
-        <button onclick="setStatus(${i},'รอตรวจ')">⏳ รอตรวจ</button>
-        <button onclick="deleteOrder(${i})" style="background:#ff0044;color:white">
-          🗑️ ลบออเดอร์
-        </button>
-
-        <img src="${o.slip}" style="width:100%;margin-top:10px">
+      <div class="order">
+        <b>${o.name}</b><br>
+        ${o.items.join(", ")}<br>
+        💰 ${o.total} บาท<br>
+        สถานะ: ${o.status}
+        <br>
+        <button onclick="deleteOrder(${i})">🗑 ลบ</button>
       </div>
     `;
   });
-}
-
-function setStatus(i,s){
-  const data = JSON.parse(localStorage.getItem("orders"));
-  data[i].status = s;
-  localStorage.setItem("orders",JSON.stringify(data));
-  loadOrders();
+  document.getElementById("totalSales").innerText=sum;
 }
 
 function deleteOrder(i){
-  if(!confirm("ลบออเดอร์นี้?")) return;
-  const data = JSON.parse(localStorage.getItem("orders"));
-  data.splice(i,1);
-  localStorage.setItem("orders",JSON.stringify(data));
+  const orders=JSON.parse(localStorage.getItem("orders"));
+  orders.splice(i,1);
+  localStorage.setItem("orders",JSON.stringify(orders));
   loadOrders();
 }
 </script>
