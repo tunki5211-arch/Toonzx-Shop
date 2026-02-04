@@ -1,58 +1,90 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>ร้านค้าเกม Roblox - QR PromptPay</title>
-  <style>
-    /* สไตล์สำหรับเนออน/ไซเบอร์พังค์ */
-    body {
-      background-color: #000; /* พื้นหลังดำ สำหรับธีมเนออน */
-      color: #fff;
-      font-family: 'Arial', sans-serif;
-      text-align: center;
-    }
-    .neon-card {
-      display: inline-block;
-      margin: 2rem;
-      padding: 2rem;
-      background-color: rgba(30, 30, 30, 0.8);
-      border-radius: 10px;
-      /* เงาเรืองแสงรอบๆ กล่อง (สีเขียวเนออน) */
-      box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
-    }
-    .neon-card img {
-      width: 250px;
-      height: 250px;
-      border: 4px solid #39ff14; /* เส้นขอบสีเขียวเนออน */
-      border-radius: 10px;
-      /* เงาเรืองแสงรอบๆ รูป QR */
-      box-shadow: 0 0 20px #39ff14;
-    }
-    .qr-text {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-      color: #39ff14; /* สีตัวอักษรเนออน */
-      /* เอฟเฟกต์แสงเรืองแสง (ดูตัวอย่างการใช้ text-shadow ได้จาก [6]) */
-      text-shadow: 0 0 5px #39ff14, 0 0 10px #39ff14;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Roblox Shop | PromptPay</title>
+
+<style>
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#000;
+  font-family:Arial, sans-serif;
+  color:#39ff14;
+}
+
+.container{
+  text-align:center;
+}
+
+h1{
+  font-size:2.5rem;
+  text-shadow:0 0 10px #39ff14, 0 0 30px #39ff14;
+  margin-bottom:20px;
+}
+
+/* กล่อง QR */
+.qr-box{
+  background:#0a0a0a;
+  padding:25px;
+  border-radius:15px;
+  border:2px solid #39ff14;
+  box-shadow:0 0 20px #39ff14;
+}
+
+.qr-box img{
+  width:220px;
+  border-radius:10px;
+  border:2px solid #39ff14;
+}
+
+/* ปุ่มนีออน */
+.neon-btn{
+  margin-top:25px;
+  display:inline-block;
+  padding:15px 35px;
+  font-size:20px;
+  font-weight:bold;
+  color:#000;
+  background:#39ff14;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  box-shadow:0 0 20px #39ff14, 0 0 40px #39ff14;
+  transition:0.3s;
+}
+
+.neon-btn:hover{
+  background:#000;
+  color:#39ff14;
+  box-shadow:0 0 30px #39ff14, 0 0 60px #39ff14;
+}
+
+/* ข้อความใต้ QR */
+.qr-text{
+  margin-top:15px;
+  font-size:1.2rem;
+  text-shadow:0 0 5px #39ff14;
+}
+</style>
 </head>
+
 <body>
-  <!-- ส่วนหัวและรายการสินค้าของร้าน (ตัวอย่างเนื้อหา) -->
-  <h1>ร้านค้าเกม Roblox ของเรา</h1>
-  <p>รายการสินค้าเกมต่าง ๆ พร้อมซื้อได้ทันที</p>
-  <!-- ... (วางรายการสินค้าของร้านไว้ที่นี่) ... -->
+<div class="container">
 
-  <!-- ส่วนที่แนะนำ: ฝัง QR Code PromptPay -->
-  <!-- วางส่วนนี้ไว้ใต้รายการสินค้าหรือก่อน footer -->
-  <section id="qr-promptpay" class="neon-card">
-    <img src="images/promptpay-qr.png" alt="PromptPay QR Code">
-    <p class="qr-text">สแกนเพื่อชำระเงิน</p>
-  </section>
+  <h1>ร้านค้า Roblox Neon Cyber</h1>
 
-  <!-- ส่วน footer ของเว็บไซต์ -->
-  <footer>
-    <p>&copy; 2025 ร้านค้าเกม Roblox</p>
-  </footer>
+  <div class="qr-box">
+    <!-- ใส่รูป QR ของคุณตรงนี้ -->
+    <img src="promptpay-qr.png" alt="PromptPay QR">
+    <div class="qr-text">สแกน QR เพื่อชำระเงิน</div>
+  </div>
+
+  <button class="neon-btn">ชำระเงิน PromptPay</button>
+
+</div>
 </body>
 </html>
