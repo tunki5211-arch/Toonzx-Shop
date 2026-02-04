@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADMIN PANEL</title>
+<style>
+body{
+  background:#020216;
+  color:#00ffff;
+  font-family:Consolas, monospace;
+  margin:0;
+  padding:20px;
+}
+h1{text-align:center;}
+.order{
+  border:1px solid #00ffff;
+  padding:10px;
+  margin:10px 0;
+}
+button{
+  background:#00ffff;
+  border:none;
+  padding:5px 10px;
+  margin-top:5px;
+}
+</style>
+</head>
+<body>
+
+<h1>📦 ADMIN PANEL</h1>
+<div id="orders"></div>
+
+<script>
+let orders = JSON.parse(localStorage.getItem("orders") || "[]");
+const box = document.getElementById("orders");
+
+if(orders.length === 0){
+  box.innerHTML = "❌ ยังไม่มีออเดอร์";
+}
+
+orders.forEach((o,i)=>{
+  box.innerHTML += `
+  <div class="order">
+    🧾 ${o.item}<br>
+    👤 ${o.user}<br>
+    ⏰ ${o.time}<br>
+    <button onclick="del(${i})">ลบ</button>
+  </div>`;
+});
+
+function del(i){
+  orders.splice(i,1);
+  localStorage.setItem("orders",JSON.stringify(orders));
+  location.reload();
+}
+</script>
+
+</body>
+</html>
