@@ -3,78 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ROBLOX SHOP</title>
+<title>ACCESS_FUTUR</title>
 
 <style>
 body{
   margin:0;
-  font-family:Consolas, monospace;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
   background:#020216;
+  font-family:Consolas, monospace;
   color:#00ffff;
 }
-header{
-  padding:20px;
-  text-align:center;
-  box-shadow:0 0 15px #00ffff;
-}
-.container{
-  padding:20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:15px;
-}
-.card{
+.box{
+  width:100%;
+  max-width:360px;
+  padding:30px;
   background:#05052a;
-  border:1px solid #00ffff;
-  padding:15px;
+  border:2px solid #00ffff;
+  box-shadow:0 0 25px #00ffff;
+}
+h1{
   text-align:center;
+  text-shadow:0 0 15px #00ffff;
+}
+label{color:#ff00ff}
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0 16px;
+  background:#0008;
+  border:1px solid #00ffff;
+  color:white;
 }
 button{
-  margin-top:10px;
   width:100%;
-  padding:10px;
+  padding:14px;
   background:#00ffff;
   border:none;
   font-weight:bold;
-}
-.qr{
-  margin:30px auto;
-  max-width:260px;
-  text-align:center;
-  border:2px solid #00ffff;
-  padding:20px;
-}
-.qr img{
-  width:100%;
 }
 </style>
 </head>
 
 <body>
+<div class="box">
+  <h1>ACCESS_FUTUR</h1>
 
-<header>
-  <h1>🧱 ROBLOX ITEM SHOP</h1>
-</header>
+  <form onsubmit="login(event)">
+    <label>Password</label>
+    <input id="pw" type="password" required>
 
-<div class="container">
-  <div class="card">
-    <h3>Robux 400</h3>
-    <p>฿150</p>
-    <button>ซื้อ</button>
-  </div>
-
-  <div class="card">
-    <h3>VIP Server</h3>
-    <p>฿99</p>
-    <button>ซื้อ</button>
-  </div>
+    <button>LOG IN</button>
+  </form>
 </div>
 
-<div class="qr">
-  <h3>PromptPay</h3>
-  <img src="qr.png">
-  <p>สแกนเพื่อชำระเงิน</p>
-</div>
+<script>
+function login(e){
+  e.preventDefault();
 
+  const password = document.getElementById("pw").value;
+  const correct = "919921"; // ← เปลี่ยนรหัสตรงนี้
+
+  if(password === correct){
+    window.location.href = "shop.html";
+  }else{
+    alert("ACCESS DENIED");
+  }
+}
+</script>
 </body>
 </html>
