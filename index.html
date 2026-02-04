@@ -13,14 +13,14 @@ body{
   color:#00ffff;
 }
 header{
-  padding:20px;
+  padding:15px;
   text-align:center;
   box-shadow:0 0 15px #00ffff;
 }
 .container{
-  padding:20px;
+  padding:15px;
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
   gap:15px;
 }
 .card{
@@ -30,210 +30,176 @@ header{
   text-align:center;
 }
 button{
-  margin-top:10px;
   width:100%;
   padding:10px;
+  margin-top:8px;
   background:#00ffff;
   border:none;
   font-weight:bold;
-  cursor:pointer;
 }
-.qr{
-  margin:30px auto;
-  max-width:280px;
-  text-align:center;
-  border:2px solid #00ffff;
-  padding:20px;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
+.bill, .qr, .admin{
+  margin:20px;
+  border:1px solid #00ffff;
+  padding:15px;
 }
 .hidden{display:none;}
-.admin{
-  padding:20px;
-  border-top:2px solid #00ffff;
+input, select{
+  width:100%;
+  padding:8px;
+  margin:5px 0;
 }
-.notice{
-  color:#ff00ff;
-  font-weight:bold;
-  margin:10px 0;
-}
+.status-wait{color:yellow;}
+.status-done{color:#00ff00;}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>🧱 ROBLOX ITEM SHOP</h1>
+<h2>🧱 ROBLOX ITEM SHOP</h2>
+<button onclick="openAdmin()">🔐 เข้าแอดมิน</button>
 </header>
 
-<!-- ร้าน -->
-<div class="container" id="shop"></div>
+<!-- 🛒 ร้าน -->
+<div class="container" id="products"></div>
 
-<!-- ชำระเงิน -->
+<div class="bill">
+<h3>🧾 บิลของคุณ</h3>
+<div id="cart"></div>
+<p>รวม: <span id="total">0</span> บาท</p>
+<input id="coupon" placeholder="คูปอง (เช่น VIP10)">
+<button onclick="applyCoupon()">ใช้คูปอง</button>
+</div>
+
 <div class="qr">
-  <h3>💸 PromptPay</h3>
-  <img src="qr.png" style="width:100%">
-  <p id="pp">0123456789</p>
-  <button onclick="copyPP()">ก๊อปเลข PromptPay</button>
-
-  <input id="user" placeholder="Username Roblox">
-  <input type="file" id="slip">
-  <button onclick="checkout()">โอนแล้ว</button>
+<h3>💸 PromptPay</h3>
+<p id="pp">0912345678</p>
+<button onclick="copyPP()">ก๊อปเลข PromptPay</button>
+<img src="qr.png" style="width:100%;margin-top:10px">
+<p>โอนแล้วอัปโหลดสลิป</p>
+<input type="file" id="slip">
+<button onclick="submitOrder()">ส่งออเดอร์</button>
 </div>
 
-<!-- ขอบคุณ -->
-<div class="qr hidden" id="thanks">
-  <h3>✅ ขอบคุณสำหรับการสั่งซื้อ</h3>
-  <p>รหัสออเดอร์</p>
-  <h2 id="orderId"></h2>
-  <button onclick="downloadPDF()">🧾 ดาวน์โหลดใบเสร็จ PDF</button>
+<div class="hidden" id="thanks">
+<h2>✅ ขอบคุณสำหรับการสั่งซื้อ</h2>
+<p>โอนแล้วแอดมินจะตรวจสอบ</p>
 </div>
 
-<!-- เช็กสถานะ -->
-<div class="qr">
-  <input id="checkId" placeholder="กรอกรหัสออเดอร์">
-  <button onclick="checkOrder()">เช็กสถานะ</button>
-  <p id="status"></p>
+<!-- 🔐 ADMIN -->
+<div class="admin hidden" id="admin">
+<h3>🔐 หลังบ้าน</h3>
+<input id="adminPass" placeholder="รหัสแอดมิน">
+<button onclick="loginAdmin()">เข้า</button>
+
+<div id="adminPanel" class="hidden">
+<h4>📦 ออเดอร์</h4>
+<div id="orders"></div>
+<p>💰 ยอดขายรวม: <span id="sum"></span> บาท</p>
 </div>
-
-<!-- แอดมิน -->
-<div class="admin">
-  <h2>🔐 Admin</h2>
-  <input id="adminPass" placeholder="รหัสแอดมิน">
-  <button onclick="login()">เข้าแอดมิน</button>
-
-  <div id="panel" class="hidden">
-    <p id="notify" class="notice"></p>
-    <h3>📦 ออเดอร์</h3>
-    <div id="orders"></div>
-    <h3>💰 ยอดขายรวม: <span id="sum">0</span> บาท</h3>
-    <canvas id="chart"></canvas>
-  </div>
 </div>
-
-<audio id="notifySound">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
-const ADMIN_PASSWORD="1234";
-
-const products=[
+/* ---------- DATA ---------- */
+const PRODUCTS=[
  {name:"Robux 400",price:150,hot:true},
- {name:"VIP Server",price:99,hot:false}
+ {name:"VIP Server",price:99,hot:false},
+ {name:"Battle Pass",price:450,hot:true}
 ];
+const ADMIN_PASS="1234";
 
-let orders=JSON.parse(localStorage.orders||"[]");
+/* ---------- SHOP ---------- */
+let cart=[];
+let total=0;
 
-/* แสดงสินค้า */
-shop.innerHTML=products.map(p=>`
-<div class="card">
-  <h3>${p.hot?"⭐ ":""}${p.name}</h3>
-  <p>${p.price} บาท</p>
-</div>`).join("");
+const products=document.getElementById("products");
+PRODUCTS.forEach(p=>{
+ products.innerHTML+=`
+ <div class="card">
+ <h4>${p.name}${p.hot?" ⭐":""}</h4>
+ <p>${p.price} บาท</p>
+ <button onclick="add('${p.name}',${p.price})">ซื้อ</button>
+ </div>`;
+});
+
+function add(n,p){
+ cart.push({n,p});
+ total+=p;
+ renderCart();
+}
+
+function renderCart(){
+ cartDiv.innerHTML="";
+ cart.forEach(i=>{
+  cartDiv.innerHTML+=`<p>${i.n} - ${i.p}</p>`;
+ });
+ totalEl.innerText=total;
+}
+
+function applyCoupon(){
+ if(coupon.value==="VIP10"){
+   total*=0.9;
+   totalEl.innerText=Math.floor(total);
+ }
+}
 
 function copyPP(){
-  navigator.clipboard.writeText(pp.innerText);
-  alert("คัดลอกเลข PromptPay แล้ว");
+ navigator.clipboard.writeText(pp.innerText);
+ alert("ก๊อปแล้ว");
 }
 
-function checkout(){
-  if(!user.value){
-    alert("กรุณากรอก Username");
-    return;
-  }
-  const id="RBX"+Date.now();
-  const total=products.reduce((s,p)=>s+p.price,0);
-
-  orders.push({
-    id,
-    user:user.value,
-    total,
-    status:"รอตรวจ"
-  });
-
-  localStorage.orders=JSON.stringify(orders);
-  localStorage.newOrder="มีออเดอร์ใหม่ "+id;
-
-  orderId.innerText=id;
-  thanks.classList.remove("hidden");
+function submitOrder(){
+ const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+ orders.push({
+   items:cart,
+   total:total,
+   status:"รอตรวจ"
+ });
+ localStorage.setItem("orders",JSON.stringify(orders));
+ document.body.innerHTML=thanks.innerHTML;
 }
 
-function checkOrder(){
-  const o=orders.find(x=>x.id===checkId.value);
-  status.innerText=o?("สถานะ: "+o.status):"ไม่พบออเดอร์";
+/* ---------- ADMIN ---------- */
+function openAdmin(){
+ admin.classList.toggle("hidden");
 }
 
-/* แอดมิน */
-function login(){
-  if(adminPass.value===ADMIN_PASSWORD){
-    panel.classList.remove("hidden");
-    renderAdmin();
-  }else{
-    alert("รหัสไม่ถูกต้อง");
-  }
+function loginAdmin(){
+ if(adminPass.value!==ADMIN_PASS)return alert("รหัสผิด");
+ adminPanel.classList.remove("hidden");
+ loadOrders();
 }
 
-function renderAdmin(){
-  ordersDiv.innerHTML=orders.map(o=>`
-    <p>
-      ${o.id} | ${o.user} | ${o.status} | ${o.total}฿
-      <button onclick="setStatus('${o.id}')">✔</button>
-      <button onclick="delOrder('${o.id}')">🗑️</button>
-    </p>
-  `).join("");
-
-  sum.innerText=orders.reduce((s,o)=>s+o.total,0);
-
-  if(localStorage.newOrder){
-    notify.innerText="🔔 "+localStorage.newOrder;
-    notifySound.play();
-    localStorage.removeItem("newOrder");
-  }
-
-  new Chart(chart,{
-    type:"bar",
-    data:{
-      labels:orders.map(o=>o.id),
-      datasets:[{
-        label:"ยอดขาย",
-        data:orders.map(o=>o.total)
-      }]
-    }
-  });
+function loadOrders(){
+ const orders=JSON.parse(localStorage.getItem("orders")||"[]");
+ let sum=0;
+ ordersDiv.innerHTML="";
+ orders.forEach((o,i)=>{
+  sum+=o.total;
+  ordersDiv.innerHTML+=`
+  <div>
+   <p>${o.total} บาท -
+   <span class="${o.status==='รอตรวจ'?'status-wait':'status-done'}">${o.status}</span>
+   </p>
+   <button onclick="done(${i})">สำเร็จ</button>
+   <button onclick="del(${i})">ลบ</button>
+  </div>`;
+ });
+ sumEl.innerText=sum;
 }
 
-function setStatus(id){
-  orders.find(o=>o.id===id).status="สำเร็จ";
-  localStorage.orders=JSON.stringify(orders);
-  renderAdmin();
+function done(i){
+ const orders=JSON.parse(localStorage.getItem("orders"));
+ orders[i].status="สำเร็จ";
+ localStorage.setItem("orders",JSON.stringify(orders));
+ loadOrders();
 }
 
-function delOrder(id){
-  orders=orders.filter(o=>o.id!==id);
-  localStorage.orders=JSON.stringify(orders);
-  renderAdmin();
-}
-
-/* PDF */
-function downloadPDF(){
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
-  pdf.setFontSize(16);
-  pdf.text("ROBLOX ITEM SHOP",20,20);
-  pdf.setFontSize(12);
-  pdf.text("Order ID: "+orderId.innerText,20,40);
-  pdf.text("User: "+user.value,20,50);
-  pdf.text("ยอดรวม: "+products.reduce((s,p)=>s+p.price,0)+" บาท",20,60);
-  pdf.text("สถานะ: รอตรวจ",20,70);
-  pdf.text("ขอบคุณที่ใช้บริการ",20,90);
-  pdf.save("receipt-"+orderId.innerText+".pdf");
+function del(i){
+ const orders=JSON.parse(localStorage.getItem("orders"));
+ orders.splice(i,1);
+ localStorage.setItem("orders",JSON.stringify(orders));
+ loadOrders();
 }
 </script>
 
