@@ -8,250 +8,75 @@
 <style>
 body{margin:0;font-family:Consolas;background:#020216;color:#00ffff}
 header{text-align:center;padding:20px;box-shadow:0 0 20px #00ffff}
-h2{text-align:center}
-.shop,.admin,.thank{padding:20px}
 .card{border:1px solid #00ffff;padding:15px;margin:10px}
-.featured{border:2px solid #ff00ff;box-shadow:0 0 15px #ff00ff}
-button{padding:10px;width:100%;background:#00ffff;border:none;font-weight:bold;margin-top:5px}
-input{width:100%;padding:10px;margin:5px 0}
-.hidden{display:none}
-.order{border:1px solid #00ffff;padding:10px;margin:10px}
+button{width:100%;padding:10px;background:#00ffff;border:none;font-weight:bold}
 .cart{border:1px dashed #00ffff;padding:10px;margin:10px}
-.total{text-align:center;font-size:18px;margin:10px}
-.qr{border:2px solid #00ffff;padding:15px;text-align:center;max-width:260px;margin:auto}
-.qr img{width:100%}
-.copy{background:#ff00ff;color:white}
+.qr{text-align:center;border:2px solid #00ffff;padding:15px}
 </style>
 </head>
 
 <body>
-
 <header>
 <h1>🧱 ROBLOX ITEM SHOP</h1>
-<button onclick="toggleAdmin()">🔐 เข้าแอดมิน</button>
 </header>
 
-<!-- SHOP -->
-<div class="shop" id="shopPage">
-<h2>🛒 สินค้า</h2>
 <div id="shop"></div>
 
 <h3>🧺 ตะกร้า</h3>
 <div id="cart"></div>
-<div class="total" id="total">ยอดรวม: 0 บาท</div>
+<p id="total">ยอดรวม: 0 บาท</p>
 
 <div class="qr">
-<h3>💸 PromptPay</h3>
-<img src="qr.png">
-<p>เบอร์: 012-345-6789</p>
-<button class="copy" onclick="copyPP()">📋 ก๊อปเลข PromptPay</button>
+<img src="qr.png" width="200"><br>
+วอเล็ท 064-812-9492<br>
+ชื่อ ฐิติคุณ
 </div>
 
-<h3>📤 อัปโหลดสลิป</h3>
 <input id="customer" placeholder="ชื่อลูกค้า">
 <input type="file" id="slip">
 <button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
-</div>
-
-<!-- THANK YOU -->
-<div class="thank hidden" id="thank">
-<h2>🙏 ขอบคุณสำหรับการสั่งซื้อ</h2>
-<p>โอนแล้วกรุณาทักแอดมิน</p>
-<button onclick="backShop()">กลับหน้าร้าน</button>
-</div>
-
-<!-- ADMIN -->
-<div class="admin hidden" id="admin">
-<h2>🔐 ADMIN</h2>
-<input id="adminPass" type="password" placeholder="รหัสแอดมิน">
-<button onclick="login()">เข้าแอดมิน</button>
-
-<div id="panel" class="hidden">
-
-<h3>📊 ออเดอร์</h3>
-<div id="orders"></div>
-
-<hr>
-
-<h3>📦 จัดการสินค้า</h3>
-<div id="adminProducts"></div>
-
-<h3>➕ เพิ่มสินค้า</h3>
-<input id="pname" placeholder="ชื่อสินค้า">
-<input id="pprice" placeholder="ราคา">
-<label><input type="checkbox" id="pfea"> ⭐ สินค้าแนะนำ</label>
-<button onclick="addProduct()">เพิ่มสินค้า</button>
-
-</div>
-</div>
 
 <script>
-const ADMIN_PASSWORD="919921";
-const PP_NUMBER="0123456789";
-
-let products=JSON.parse(localStorage.getItem("products"))||[
- {name:"Robux 800",price:299,featured:true},
- {name:"Robux 400",price:150,featured:false},
- {name:"VIP Server",price:99,featured:false}
-];
-
+let products = JSON.parse(localStorage.getItem("products")) || [];
 let cart=[];
 
-/* ---------- SHOP ---------- */
 function renderShop(){
  shop.innerHTML="";
  products.forEach((p,i)=>{
   shop.innerHTML+=`
-  <div class="card ${p.featured?'featured':''}">
-   <h3>${p.name}</h3>
-   <p>${p.price} บาท</p>
-   <button onclick="addCart(${i})">เพิ่ม</button>
-  </div>`;
+   <div class="card">
+    <h3>${p.name}</h3>
+    <p>${p.price} บาท</p>
+    <button onclick="addCart(${i})">เพิ่ม</button>
+   </div>`;
  });
- localStorage.setItem("products",JSON.stringify(products));
 }
 renderShop();
 
-function addCart(i){
- cart.push(products[i]);
- renderCart();
-}
-
+function addCart(i){cart.push(products[i]);renderCart();}
 function renderCart(){
  cart.innerHTML="";
- cart.forEach((x,i)=>{
-  cart.innerHTML+=`
-  <div class="cart">
-   ${x.name} - ${x.price} บาท
-   <button onclick="removeCart(${i})">ลบ</button>
-  </div>`;
+ let sum=0;
+ cart.forEach((c,i)=>{
+  sum+=c.price;
+  cart.innerHTML+=`${c.name} ${c.price} บาท <button onclick="remove(${i})">ลบ</button><br>`;
  });
- updateTotal();
+ total.innerText="ยอดรวม: "+sum+" บาท";
 }
-
-function removeCart(i){
- cart.splice(i,1);
- renderCart();
-}
-
-function updateTotal(){
- let t=cart.reduce((s,x)=>s+x.price,0);
- total.innerText="ยอดรวม: "+t+" บาท";
-}
-
-function copyPP(){
- navigator.clipboard.writeText(PP_NUMBER);
- alert("ก๊อปเลข PromptPay แล้ว");
-}
+function remove(i){cart.splice(i,1);renderCart();}
 
 function checkout(){
- if(cart.length==0)return alert("ยังไม่เลือกสินค้า");
  let orders=JSON.parse(localStorage.getItem("orders"))||[];
  orders.push({
-  name:customer.value||"-",
+  customer:customer.value,
   items:cart,
-  slip:slip.files[0]?.name||"-",
-  status:"รอตรวจ"
+  status:"รอตรวจ",
+  slip:slip.files[0]?.name||"-"
  });
  localStorage.setItem("orders",JSON.stringify(orders));
- shopPage.classList.add("hidden");
- thank.classList.remove("hidden");
- cart=[];
- renderCart();
-}
-
-function backShop(){
- thank.classList.add("hidden");
- shopPage.classList.remove("hidden");
-}
-
-/* ---------- ADMIN ---------- */
-function toggleAdmin(){
- admin.classList.toggle("hidden");
-}
-
-function login(){
- if(adminPass.value!==ADMIN_PASSWORD)return alert("รหัสผิด");
- panel.classList.remove("hidden");
- loadOrders();
- renderAdminProducts();
-}
-
-function loadOrders(){
- orders.innerHTML="";
- let o=JSON.parse(localStorage.getItem("orders"))||[];
- o.forEach((x,i)=>{
-  orders.innerHTML+=`
-  <div class="order">
-   <b>${x.name}</b><br>
-   ${x.items.map(it=>it.name).join(", ")}<br>
-   Slip: ${x.slip}<br>
-   สถานะ: ${x.status}<br>
-   <button onclick="setStatus(${i},'สำเร็จ')">สำเร็จ</button>
-   <button onclick="deleteOrder(${i})">ลบ</button>
-  </div>`;
- });
-}
-
-function setStatus(i,s){
- let o=JSON.parse(localStorage.getItem("orders"));
- o[i].status=s;
- localStorage.setItem("orders",JSON.stringify(o));
- loadOrders();
-}
-
-function deleteOrder(i){
- if(!confirm("ลบออเดอร์นี้?"))return;
- let o=JSON.parse(localStorage.getItem("orders"));
- o.splice(i,1);
- localStorage.setItem("orders",JSON.stringify(o));
- loadOrders();
-}
-
-/* ---------- PRODUCTS ---------- */
-function renderAdminProducts(){
- adminProducts.innerHTML="";
- products.forEach((p,i)=>{
-  adminProducts.innerHTML+=`
-  <div class="order">
-   <input value="${p.name}" onchange="editName(${i},this.value)">
-   <input type="number" value="${p.price}" onchange="editPrice(${i},this.value)">
-   <label>
-     <input type="checkbox" ${p.featured?'checked':''}
-     onchange="editFeatured(${i},this.checked)"> ⭐
-   </label>
-   <button onclick="deleteProduct(${i})">ลบสินค้า</button>
-  </div>`;
- });
-}
-
-function editName(i,v){products[i].name=v;saveProducts()}
-function editPrice(i,v){products[i].price=Number(v);saveProducts()}
-function editFeatured(i,v){products[i].featured=v;saveProducts()}
-
-function deleteProduct(i){
- if(!confirm("ลบสินค้านี้?"))return;
- products.splice(i,1);
- saveProducts();
-}
-
-function addProduct(){
- products.push({
-  name:pname.value,
-  price:Number(pprice.value),
-  featured:pfea.checked
- });
- pname.value=pprice.value="";
- pfea.checked=false;
- saveProducts();
-}
-
-function saveProducts(){
- localStorage.setItem("products",JSON.stringify(products));
- renderShop();
- renderAdminProducts();
+ alert("สั่งซื้อเรียบร้อย");
+ cart=[];renderCart();
 }
 </script>
-
 </body>
 </html>
