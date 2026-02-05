@@ -3,101 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADMIN</title>
+<title>ADMIN PANEL</title>
 
 <style>
-body{font-family:Consolas;background:#000;color:#0ff;padding:20px}
-.card{border:1px solid #0ff;padding:10px;margin:10px}
-button{padding:5px;margin:5px}
-input{padding:5px;width:100%}
+body{
+  margin:0;
+  font-family:Consolas;
+  background:#020216;
+  color:#00ffff;
+}
+h1,h2,h3{text-align:center}
+.container{padding:20px}
+.card{
+  border:1px solid #00ffff;
+  padding:10px;
+  margin:10px 0;
+}
+button{
+  padding:8px;
+  margin-top:5px;
+  width:100%;
+  background:#00ffff;
+  border:none;
+  font-weight:bold;
+}
+hr{border:1px solid #00ffff}
+.summary{
+  border:2px solid #ff00ff;
+  padding:15px;
+  box-shadow:0 0 15px #ff00ff;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🔐 ADMIN LOGIN</h2>
-<input id="pass" type="password" placeholder="รหัสแอดมิน">
-<button onclick="login()">เข้า</button>
+<h1>🔐 ADMIN ORDER</h1>
 
-<div id="panel" style="display:none">
+<div class="container">
 
-<h3>📦 สินค้า</h3>
-<div id="products"></div>
+  <h3>⏳ รอตรวจ</h3>
+  <div id="pending"></div>
 
-<input id="pname" placeholder="ชื่อสินค้า">
-<input id="pprice" type="number" placeholder="ราคา">
-<button onclick="addProduct()">เพิ่มสินค้า</button>
+  <h3>✅ สำเร็จ</h3>
+  <div id="done"></div>
 
-<hr>
+  <hr>
 
-<h3>📋 ออเดอร์</h3>
-<div id="orders"></div>
+  <h3>📊 สรุปยอดขาย</h3>
+  <div id="summary" class="summary"></div>
 
 </div>
 
 <script>
-const ADMIN="919921";
-
-function login(){
- if(pass.value!==ADMIN)return alert("รหัสผิด");
- panel.style.display="block";
- loadProducts();loadOrders();
-}
-
-function loadProducts(){
- let p=JSON.parse(localStorage.getItem("products"))||[];
- products.innerHTML="";
- p.forEach((x,i)=>{
-  products.innerHTML+=`
-   <div class="card">
-    <input value="${x.name}" onchange="editName(${i},this.value)">
-    <input type="number" value="${x.price}" onchange="editPrice(${i},this.value)">
-    <button onclick="delProduct(${i})">ลบ</button>
-   </div>`;
- });
-}
-
-function addProduct(){
- let p=JSON.parse(localStorage.getItem("products"))||[];
- p.push({name:pname.value,price:Number(pprice.value)});
- localStorage.setItem("products",JSON.stringify(p));
- loadProducts();
-}
-
-function editName(i,v){
- let p=JSON.parse(localStorage.getItem("products"));
- p[i].name=v;localStorage.setItem("products",JSON.stringify(p));
-}
-function editPrice(i,v){
- let p=JSON.parse(localStorage.getItem("products"));
- p[i].price=v;localStorage.setItem("products",JSON.stringify(p));
-}
-function delProduct(i){
- let p=JSON.parse(localStorage.getItem("products"));
- p.splice(i,1);localStorage.setItem("products",JSON.stringify(p));
- loadProducts();
-}
-
+/* โหลดออเดอร์ทั้งหมด */
 function loadOrders(){
- let o=JSON.parse(localStorage.getItem("orders"))||[];
- orders.innerHTML="";
- o.forEach((x,i)=>{
-  orders.innerHTML+=`
-   <div class="card">
-    ${x.customer}<br>
-    ${x.items.map(it=>it.name).join(", ")}<br>
-    สถานะ: ${x.status}
-    <button onclick="done(${i})">สำเร็จ</button>
-   </div>`;
- });
+  const pendingDiv = document.getElementById("pending");
+  const doneDiv = document.getElementById("done");
+
+  pendingDiv.innerHTML = "";
+  doneDiv.innerHTML = "";
+
+  const orders = JSON.parse(localStorage.getItem("orders")) || [];
+
+  orders.forEach((o,i)=>{
+    const html = `
+      <div class="card">
+        👤 ลูกค้า: <b>${o.name || "-"}</b><br>
+        🧾 สินค้า: ${o.items?.map(x=>x.name).join(", ") || "-"}<br>
+        💰 รวม: <b>${o.total || 0}</b> บาท<br>
+        <button onclick="markDone(${i})">✅ สำเร็จ</button>
+        <button onclick="delOrder(${i})">🗑️ ลบ</button>
+      </div>
+    `;
+
+    if(o.status === "done"){
+      doneDiv.innerHTML += html;
+    }else{
+      pendingDiv.innerHTML += html;
+    }
+  });
+
+  calcSummary();
 }
 
-function done(i){
- let o=JSON.parse(localStorage.getItem("orders"));
- o[i].status="สำเร็จ";
- localStorage.setItem("orders",JSON.stringify(o));
- loadOrders();
+/* กดสำเร็จ */
+function markDone(i){
+  const orders = JSON.parse(localStorage.getItem("orders")) || [];
+  orders[i].status = "done";
+  localStorage.setItem("orders", JSON.stringify(orders));
+  loadOrders();
 }
+
+/* ลบออเดอร์ */
+function delOrder(i){
+  if(!confirm("ลบออเดอร์นี้?")) return;
+  const orders = JSON.parse(localStorage.getItem("orders")) || [];
+  orders.splice(i,1);
+  localStorage.setItem("orders", JSON.stringify(orders));
+  loadOrders();
+}
+
+/* สรุปยอดขาย */
+function calcSummary(){
+  const orders = JSON.parse(localStorage.getItem("orders")) || [];
+  let total = 0;
+  let count = 0;
+
+  orders.forEach(o=>{
+    if(o.status === "done"){
+      total += Number(o.total || 0);
+      count++;
+    }
+  });
+
+  document.getElementById("summary").innerHTML = `
+    🧾 ออเดอร์สำเร็จ: <b>${count}</b> รายการ<br>
+    💸 ยอดขายรวม: <b>${total}</b> บาท
+  `;
+}
+
+/* โหลดทันที */
+loadOrders();
 </script>
+
 </body>
 </html>
