@@ -43,12 +43,12 @@ input{width:100%;padding:10px;margin:5px 0}
 <div class="qr">
 <h3>💸 PromptPay</h3>
 <img src="qr.png">
-<p>เบอร์: 0648129492</p>
+<p>เบอร์: 012-345-6789</p>
 <button class="copy" onclick="copyPP()">📋 ก๊อปเลข PromptPay</button>
 </div>
 
 <h3>📤 อัปโหลดสลิป</h3>
-<input id="customer" placeholder="ชื่อดิสลูกค้า">
+<input id="customer" placeholder="ชื่อลูกค้า">
 <input type="file" id="slip">
 <button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
 </div>
@@ -67,17 +67,21 @@ input{width:100%;padding:10px;margin:5px 0}
 <button onclick="login()">เข้าแอดมิน</button>
 
 <div id="panel" class="hidden">
+
 <h3>📊 ออเดอร์</h3>
 <div id="orders"></div>
+
+<hr>
+
+<h3>📦 จัดการสินค้า</h3>
+<div id="adminProducts"></div>
 
 <h3>➕ เพิ่มสินค้า</h3>
 <input id="pname" placeholder="ชื่อสินค้า">
 <input id="pprice" placeholder="ราคา">
-<label><input type="checkbox" id="pfea"> สินค้าแนะนำ</label>
+<label><input type="checkbox" id="pfea"> ⭐ สินค้าแนะนำ</label>
 <button onclick="addProduct()">เพิ่มสินค้า</button>
 
-<h3>🗑️ ลบสินค้า</h3>
-<div id="adminProducts"></div>
 </div>
 </div>
 
@@ -93,6 +97,7 @@ let products=JSON.parse(localStorage.getItem("products"))||[
 
 let cart=[];
 
+/* ---------- SHOP ---------- */
 function renderShop(){
  shop.innerHTML="";
  products.forEach((p,i)=>{
@@ -113,9 +118,9 @@ function addCart(i){
 }
 
 function renderCart(){
- cartDiv.innerHTML="";
+ cart.innerHTML="";
  cart.forEach((x,i)=>{
-  cartDiv.innerHTML+=`
+  cart.innerHTML+=`
   <div class="cart">
    ${x.name} - ${x.price} บาท
    <button onclick="removeCart(${i})">ลบ</button>
@@ -160,6 +165,7 @@ function backShop(){
  shopPage.classList.remove("hidden");
 }
 
+/* ---------- ADMIN ---------- */
 function toggleAdmin(){
  admin.classList.toggle("hidden");
 }
@@ -181,24 +187,52 @@ function loadOrders(){
    ${x.items.map(it=>it.name).join(", ")}<br>
    Slip: ${x.slip}<br>
    สถานะ: ${x.status}<br>
-   <button onclick="done(${i})">สำเร็จ</button>
-   <button onclick="del(${i})">ลบ</button>
+   <button onclick="setStatus(${i},'สำเร็จ')">สำเร็จ</button>
+   <button onclick="deleteOrder(${i})">ลบ</button>
   </div>`;
  });
 }
 
-function done(i){
+function setStatus(i,s){
  let o=JSON.parse(localStorage.getItem("orders"));
- o[i].status="สำเร็จ";
+ o[i].status=s;
  localStorage.setItem("orders",JSON.stringify(o));
  loadOrders();
 }
 
-function del(i){
+function deleteOrder(i){
+ if(!confirm("ลบออเดอร์นี้?"))return;
  let o=JSON.parse(localStorage.getItem("orders"));
  o.splice(i,1);
  localStorage.setItem("orders",JSON.stringify(o));
  loadOrders();
+}
+
+/* ---------- PRODUCTS ---------- */
+function renderAdminProducts(){
+ adminProducts.innerHTML="";
+ products.forEach((p,i)=>{
+  adminProducts.innerHTML+=`
+  <div class="order">
+   <input value="${p.name}" onchange="editName(${i},this.value)">
+   <input type="number" value="${p.price}" onchange="editPrice(${i},this.value)">
+   <label>
+     <input type="checkbox" ${p.featured?'checked':''}
+     onchange="editFeatured(${i},this.checked)"> ⭐
+   </label>
+   <button onclick="deleteProduct(${i})">ลบสินค้า</button>
+  </div>`;
+ });
+}
+
+function editName(i,v){products[i].name=v;saveProducts()}
+function editPrice(i,v){products[i].price=Number(v);saveProducts()}
+function editFeatured(i,v){products[i].featured=v;saveProducts()}
+
+function deleteProduct(i){
+ if(!confirm("ลบสินค้านี้?"))return;
+ products.splice(i,1);
+ saveProducts();
 }
 
 function addProduct(){
@@ -209,28 +243,13 @@ function addProduct(){
  });
  pname.value=pprice.value="";
  pfea.checked=false;
+ saveProducts();
+}
+
+function saveProducts(){
+ localStorage.setItem("products",JSON.stringify(products));
  renderShop();
  renderAdminProducts();
-}
-
-function renderAdminProducts(){
- adminProducts.innerHTML="";
- products.forEach((p,i)=>{
-  adminProducts.innerHTML+=`
-   <div class="order">
-    ${p.name} - ${p.price} บาท
-    <button onclick="deleteProduct(${i})">ลบ</button>
-   </div>`;
- });
-}
-
-function deleteProduct(i){
- if(confirm("ลบสินค้านี้?")){
-  products.splice(i,1);
-  localStorage.setItem("products",JSON.stringify(products));
-  renderShop();
-  renderAdminProducts();
- }
 }
 </script>
 
