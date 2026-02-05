@@ -36,6 +36,7 @@ button{
   background:#00ffff;
   border:none;
   font-weight:bold;
+  cursor:pointer;
 }
 .cart{
   position:fixed;
@@ -63,33 +64,48 @@ button{
 </div>
 
 <script>
-// ❌ ไม่มี login / สมัครสมาชิกใด ๆ
+// ===== กัน localStorage พัง =====
+let products = [];
+try {
+  products = JSON.parse(localStorage.getItem("products")) || [];
+} catch(e){
+  products = [];
+}
 
-let products = JSON.parse(localStorage.getItem("products")) || [
-  {name:"Robux 400",price:150},
-  {name:"VIP Server",price:99}
-];
+// ถ้ายังไม่มีสินค้า ให้ใส่ค่าเริ่มต้น
+if(products.length === 0){
+  products = [
+    {name:"Robux 400", price:150},
+    {name:"VIP Server", price:99}
+  ];
+  localStorage.setItem("products", JSON.stringify(products));
+}
 
 let cart = [];
 let total = 0;
 
+// ===== render ร้าน =====
 function renderShop(){
-  let html="";
+  const shop = document.getElementById("shop");
+  if(!shop) return;
+
+  shop.innerHTML = "";
   products.forEach((p,i)=>{
-    html+=`
-      <div class="card">
-        <h3>${p.name}</h3>
-        <p>${p.price} บาท</p>
-        <button onclick="add(${i})">เพิ่มลงตะกร้า</button>
-      </div>
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <h3>${p.name}</h3>
+      <p>${p.price} บาท</p>
+      <button onclick="addToCart(${i})">เพิ่มลงตะกร้า</button>
     `;
+    shop.appendChild(div);
   });
-  document.getElementById("shop").innerHTML = html;
 }
 
-function add(i){
+function addToCart(i){
+  if(!products[i]) return;
   cart.push(products[i]);
-  total += products[i].price;
+  total += Number(products[i].price);
   document.getElementById("total").innerText = total;
 }
 
@@ -99,7 +115,13 @@ function checkout(){
     return;
   }
 
-  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+  let orders = [];
+  try{
+    orders = JSON.parse(localStorage.getItem("orders")) || [];
+  }catch(e){
+    orders = [];
+  }
+
   orders.push({
     items: cart,
     total: total,
@@ -108,11 +130,12 @@ function checkout(){
   });
 
   localStorage.setItem("orders", JSON.stringify(orders));
-  alert("สั่งซื้อเรียบร้อย โอนแล้วแจ้งแอดมินได้เลย");
+
+  alert("สั่งซื้อสำเร็จ โอนแล้วแจ้งแอดมินได้เลย");
 
   cart = [];
   total = 0;
-  document.getElementById("total").innerText = 0;
+  document.getElementById("total").innerText = "0";
 }
 
 renderShop();
