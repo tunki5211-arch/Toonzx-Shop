@@ -3,143 +3,80 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Toonzx Roblox Shop</title>
+<title>ROBLOX SHOP</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Consolas, monospace;
-  background:#020216;
-  color:#00ffff;
-}
-header{
-  padding:20px;
-  text-align:center;
-  box-shadow:0 0 15px #00ffff;
-}
-.shop{
-  padding:20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:15px;
-}
-.card{
-  background:#05052a;
-  border:1px solid #00ffff;
-  padding:15px;
-  text-align:center;
-}
-button{
-  width:100%;
-  padding:10px;
-  margin-top:10px;
-  background:#00ffff;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
-.cart{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#000;
-  padding:10px;
-  text-align:center;
-}
+body{margin:0;font-family:Consolas;background:#020216;color:#00ffff}
+header{text-align:center;padding:20px;box-shadow:0 0 20px #00ffff}
+.card{border:1px solid #00ffff;padding:15px;margin:10px}
+button{width:100%;padding:10px;background:#00ffff;border:none;font-weight:bold}
+.cart{border:1px dashed #00ffff;padding:10px;margin:10px}
+.qr{text-align:center;border:2px solid #00ffff;padding:15px}
 </style>
 </head>
 
 <body>
-
 <header>
-  <h1>🧱 ROBLOX ITEM SHOP</h1>
+<h1>🧱 ROBLOX ITEM SHOP</h1>
 </header>
 
-<div class="shop" id="shop"></div>
+<div id="shop"></div>
 
-<div class="cart">
-  🧾 ยอดรวม: <span id="total">0</span> บาท
-  <button onclick="checkout()">สั่งซื้อ</button>
+<h3>🧺 ตะกร้า</h3>
+<div id="cart"></div>
+<p id="total">ยอดรวม: 0 บาท</p>
+
+<div class="qr">
+<img src="qr.png" width="200"><br>
+วอเล็ท 064-812-9492<br>
+ชื่อ ฐิติคุณ
 </div>
 
+<input id="customer" placeholder="ชื่อลูกค้า">
+<input type="file" id="slip">
+<button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
+
 <script>
-// ===== กัน localStorage พัง =====
-let products = [];
-try {
-  products = JSON.parse(localStorage.getItem("products")) || [];
-} catch(e){
-  products = [];
-}
+let products = JSON.parse(localStorage.getItem("products")) || [];
+let cart=[];
 
-// ถ้ายังไม่มีสินค้า ให้ใส่ค่าเริ่มต้น
-if(products.length === 0){
-  products = [
-    {name:"Robux 400", price:150},
-    {name:"VIP Server", price:99}
-  ];
-  localStorage.setItem("products", JSON.stringify(products));
-}
-
-let cart = [];
-let total = 0;
-
-// ===== render ร้าน =====
 function renderShop(){
-  const shop = document.getElementById("shop");
-  if(!shop) return;
-
-  shop.innerHTML = "";
-  products.forEach((p,i)=>{
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <h3>${p.name}</h3>
-      <p>${p.price} บาท</p>
-      <button onclick="addToCart(${i})">เพิ่มลงตะกร้า</button>
-    `;
-    shop.appendChild(div);
-  });
+ shop.innerHTML="";
+ products.forEach((p,i)=>{
+  shop.innerHTML+=`
+   <div class="card">
+    <h3>${p.name}</h3>
+    <p>${p.price} บาท</p>
+    <button onclick="addCart(${i})">เพิ่ม</button>
+   </div>`;
+ });
 }
+renderShop();
 
-function addToCart(i){
-  if(!products[i]) return;
-  cart.push(products[i]);
-  total += Number(products[i].price);
-  document.getElementById("total").innerText = total;
+function addCart(i){cart.push(products[i]);renderCart();}
+function renderCart(){
+ cart.innerHTML="";
+ let sum=0;
+ cart.forEach((c,i)=>{
+  sum+=c.price;
+  cart.innerHTML+=`${c.name} ${c.price} บาท <button onclick="remove(${i})">ลบ</button><br>`;
+ });
+ total.innerText="ยอดรวม: "+sum+" บาท";
 }
+function remove(i){cart.splice(i,1);renderCart();}
 
 function checkout(){
-  if(cart.length === 0){
-    alert("ยังไม่ได้เลือกสินค้า");
-    return;
-  }
-
-  let orders = [];
-  try{
-    orders = JSON.parse(localStorage.getItem("orders")) || [];
-  }catch(e){
-    orders = [];
-  }
-
-  orders.push({
-    items: cart,
-    total: total,
-    status: "รอตรวจ",
-    time: new Date().toLocaleString()
-  });
-
-  localStorage.setItem("orders", JSON.stringify(orders));
-
-  alert("สั่งซื้อสำเร็จ โอนแล้วแจ้งแอดมินได้เลย");
-
-  cart = [];
-  total = 0;
-  document.getElementById("total").innerText = "0";
+ let orders=JSON.parse(localStorage.getItem("orders"))||[];
+ orders.push({
+  customer:customer.value,
+  items:cart,
+  status:"รอตรวจ",
+  slip:slip.files[0]?.name||"-"
+ });
+ localStorage.setItem("orders",JSON.stringify(orders));
+ alert("สั่งซื้อเรียบร้อย");
+ cart=[];renderCart();
 }
-
-renderShop();
 </script>
-
 </body>
 </html>
