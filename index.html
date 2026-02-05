@@ -6,77 +6,166 @@
 <title>ROBLOX SHOP</title>
 
 <style>
-body{margin:0;font-family:Consolas;background:#020216;color:#00ffff}
-header{text-align:center;padding:20px;box-shadow:0 0 20px #00ffff}
-.card{border:1px solid #00ffff;padding:15px;margin:10px}
-button{width:100%;padding:10px;background:#00ffff;border:none;font-weight:bold}
-.cart{border:1px dashed #00ffff;padding:10px;margin:10px}
-.qr{text-align:center;border:2px solid #00ffff;padding:15px}
+body{
+  margin:0;
+  font-family:Consolas, monospace;
+  background:#020216;
+  color:#00ffff;
+}
+header{
+  text-align:center;
+  padding:20px;
+  box-shadow:0 0 15px #00ffff;
+}
+button{
+  padding:10px;
+  width:100%;
+  background:#00ffff;
+  border:none;
+  font-weight:bold;
+  margin-top:5px;
+}
+.container{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:15px;
+}
+.card{
+  border:1px solid #00ffff;
+  padding:15px;
+}
+.cart, .qr{
+  padding:20px;
+  margin:20px;
+  border:2px solid #00ffff;
+}
+.total{
+  color:#ff00ff;
+  font-weight:bold;
+}
+.logout{
+  background:#ff0044;
+  color:white;
+}
 </style>
 </head>
 
 <body>
-<header>
-<h1>🧱 ROBLOX ITEM SHOP</h1>
-</header>
-
-<div id="shop"></div>
-
-<h3>🧺 ตะกร้า</h3>
-<div id="cart"></div>
-<p id="total">ยอดรวม: 0 บาท</p>
-
-<div class="qr">
-<img src="qr.png" width="200"><br>
-วอเล็ท 064-812-9492<br>
-ชื่อ ฐิติคุณ
-</div>
-
-<input id="customer" placeholder="ชื่อลูกค้า">
-<input type="file" id="slip">
-<button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
 
 <script>
-let products = JSON.parse(localStorage.getItem("products")) || [];
-let cart=[];
+/* 🔐 ตรวจ login */
+let user = localStorage.getItem("login_user");
+if(!user){
+  location.href="login.html";
+}
+</script>
+
+<header>
+  <h1>🧱 ROBLOX ITEM SHOP</h1>
+  <p>ผู้ใช้: <b id="username"></b></p>
+  <button class="logout" onclick="logout()">ออกจากระบบ</button>
+</header>
+
+<!-- SHOP -->
+<div class="container" id="shop"></div>
+
+<!-- CART -->
+<div class="cart">
+  <h3>🛒 ตะกร้าสินค้า</h3>
+  <div id="cart"></div>
+  <p class="total">รวม: <span id="total">0</span> บาท</p>
+</div>
+
+<!-- UPLOAD -->
+<div class="cart">
+  <h3>📤 อัปโหลดสลิป</h3>
+  <input type="file"><br><br>
+  <button onclick="checkout()">ยืนยันการสั่งซื้อ</button>
+</div>
+
+<!-- PROMPTPAY -->
+<div class="qr">
+  <h3>💸 PromptPay</h3>
+  <p>ชื่อ: ฐิติคุณ</p>
+  <p>เลข: <b id="pp">0648129492</b></p>
+  <button onclick="copyPP()">📋 ก๊อปเลข PromptPay</button>
+  <p>⚠️ โอนแล้วให้ทักแอดมิน</p>
+</div>
+
+<script>
+document.getElementById("username").innerText = user;
+
+/* สินค้า */
+let products = JSON.parse(localStorage.getItem("products")) || [
+ {name:"Robux 400", price:150},
+ {name:"Robux 800", price:299},
+ {name:"VIP Server", price:99}
+];
+
+let cart = [];
 
 function renderShop(){
- shop.innerHTML="";
- products.forEach((p,i)=>{
-  shop.innerHTML+=`
-   <div class="card">
-    <h3>${p.name}</h3>
-    <p>${p.price} บาท</p>
-    <button onclick="addCart(${i})">เพิ่ม</button>
-   </div>`;
- });
+  shop.innerHTML="";
+  products.forEach((p,i)=>{
+    shop.innerHTML+=`
+    <div class="card">
+      <h3>${p.name}</h3>
+      <p>${p.price} บาท</p>
+      <button onclick="addCart(${i})">เพิ่ม</button>
+    </div>`;
+  });
 }
 renderShop();
 
-function addCart(i){cart.push(products[i]);renderCart();}
-function renderCart(){
- cart.innerHTML="";
- let sum=0;
- cart.forEach((c,i)=>{
-  sum+=c.price;
-  cart.innerHTML+=`${c.name} ${c.price} บาท <button onclick="remove(${i})">ลบ</button><br>`;
- });
- total.innerText="ยอดรวม: "+sum+" บาท";
+function addCart(i){
+  cart.push(products[i]);
+  renderCart();
 }
-function remove(i){cart.splice(i,1);renderCart();}
+
+function renderCart(){
+  cartBox.innerHTML="";
+  let sum=0;
+  cart.forEach((c)=>{
+    cartBox.innerHTML+=`${c.name} - ${c.price} บาท<br>`;
+    sum+=c.price;
+  });
+  total.innerText=sum;
+}
 
 function checkout(){
- let orders=JSON.parse(localStorage.getItem("orders"))||[];
- orders.push({
-  customer:customer.value,
-  items:cart,
-  status:"รอตรวจ",
-  slip:slip.files[0]?.name||"-"
- });
- localStorage.setItem("orders",JSON.stringify(orders));
- alert("สั่งซื้อเรียบร้อย");
- cart=[];renderCart();
+  if(cart.length==0) return alert("ยังไม่เลือกสินค้า");
+
+  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+  orders.push({
+    customer:user,
+    items:cart,
+    total: total.innerText,
+    status:"รอตรวจ",
+    time:new Date().toLocaleString()
+  });
+  localStorage.setItem("orders",JSON.stringify(orders));
+
+  alert("สั่งซื้อสำเร็จ! โอนแล้วให้ทักแอดมิน");
+  cart=[];
+  renderCart();
 }
+
+function copyPP(){
+  navigator.clipboard.writeText("0648129492");
+  alert("ก๊อปเลข PromptPay แล้ว");
+}
+
+function logout(){
+  localStorage.removeItem("login_user");
+  location.href="login.html";
+}
+
+/* element shortcuts */
+const shop=document.getElementById("shop");
+const cartBox=document.getElementById("cart");
+const total=document.getElementById("total");
 </script>
+
 </body>
 </html>
