@@ -8,123 +8,127 @@
 <style>
 body{
   margin:0;
-  font-family:Consolas;
+  font-family:Consolas, monospace;
   background:#020216;
   color:#00ffff;
 }
-h1,h2,h3{text-align:center}
-.container{padding:20px}
-.card{
-  border:1px solid #00ffff;
+header{
+  text-align:center;
+  padding:15px;
+  box-shadow:0 0 15px #00ffff;
+}
+.container{padding:15px}
+input,button{
+  width:100%;
   padding:10px;
-  margin:10px 0;
+  margin:5px 0;
+  font-size:16px;
 }
 button{
-  padding:8px;
-  margin-top:5px;
-  width:100%;
   background:#00ffff;
   border:none;
   font-weight:bold;
 }
-hr{border:1px solid #00ffff}
-.summary{
+.hidden{display:none}
+.order{
+  border:1px solid #00ffff;
+  padding:10px;
+  margin:10px 0;
+}
+.success{border-color:#00ff00;color:#00ff00}
+.wait{border-color:#ffff00;color:#ffff00}
+.total{
   border:2px solid #ff00ff;
-  padding:15px;
-  box-shadow:0 0 15px #ff00ff;
+  padding:10px;
+  margin:15px 0;
+  text-align:center;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🔐 ADMIN ORDER</h1>
+<header>
+  <h2>🔐 ADMIN PANEL</h2>
+</header>
 
 <div class="container">
 
+<!-- LOGIN -->
+<div id="loginBox">
+  <input type="password" id="adminPass" placeholder="รหัสแอดมิน">
+  <button onclick="login()">เข้าสู่ระบบ</button>
+</div>
+
+<!-- PANEL -->
+<div id="panel" class="hidden">
+
+  <div class="total" id="totalSales">💰 ยอดขายรวม: 0 บาท</div>
+
   <h3>⏳ รอตรวจ</h3>
-  <div id="pending"></div>
+  <div id="waitOrders"></div>
 
   <h3>✅ สำเร็จ</h3>
-  <div id="done"></div>
+  <div id="doneOrders"></div>
 
-  <hr>
-
-  <h3>📊 สรุปยอดขาย</h3>
-  <div id="summary" class="summary"></div>
-
+</div>
 </div>
 
 <script>
-/* โหลดออเดอร์ทั้งหมด */
+const ADMIN_PASSWORD = "Toonzx919921";
+
+function login(){
+  if(adminPass.value !== ADMIN_PASSWORD){
+    alert("❌ รหัสไม่ถูกต้อง");
+    return;
+  }
+  loginBox.classList.add("hidden");
+  panel.classList.remove("hidden");
+  loadOrders();
+}
+
 function loadOrders(){
-  const pendingDiv = document.getElementById("pending");
-  const doneDiv = document.getElementById("done");
-
-  pendingDiv.innerHTML = "";
-  doneDiv.innerHTML = "";
-
-  const orders = JSON.parse(localStorage.getItem("orders")) || [];
+  let orders = JSON.parse(localStorage.getItem("orders")) || [];
+  waitOrders.innerHTML = "";
+  doneOrders.innerHTML = "";
+  let total = 0;
 
   orders.forEach((o,i)=>{
-    const html = `
-      <div class="card">
-        👤 ลูกค้า: <b>${o.name || "-"}</b><br>
-        🧾 สินค้า: ${o.items?.map(x=>x.name).join(", ") || "-"}<br>
-        💰 รวม: <b>${o.total || 0}</b> บาท<br>
-        <button onclick="markDone(${i})">✅ สำเร็จ</button>
-        <button onclick="delOrder(${i})">🗑️ ลบ</button>
-      </div>
+    let sum = o.items.reduce((s,it)=>s+Number(it.price||0),0);
+    if(o.status==="สำเร็จ") total += sum;
+
+    let div = document.createElement("div");
+    div.className = "order " + (o.status==="สำเร็จ"?"success":"wait");
+    div.innerHTML = `
+      <b>👤 ${o.name}</b><br>
+      📦 ${o.items.map(it=>it.name).join(", ")}<br>
+      💵 ${sum} บาท<br>
+      สถานะ: ${o.status}<br><br>
+      ${o.status!=="สำเร็จ"
+        ? `<button onclick="done(${i})">✔ สำเร็จ</button>`
+        : ""}
+      <button onclick="del(${i})">🗑 ลบ</button>
     `;
-
-    if(o.status === "done"){
-      doneDiv.innerHTML += html;
-    }else{
-      pendingDiv.innerHTML += html;
-    }
+    (o.status==="สำเร็จ"?doneOrders:waitOrders).appendChild(div);
   });
 
-  calcSummary();
+  totalSales.innerText = "💰 ยอดขายรวม: " + total + " บาท";
 }
 
-/* กดสำเร็จ */
-function markDone(i){
-  const orders = JSON.parse(localStorage.getItem("orders")) || [];
-  orders[i].status = "done";
-  localStorage.setItem("orders", JSON.stringify(orders));
+function done(i){
+  let o = JSON.parse(localStorage.getItem("orders"));
+  o[i].status="สำเร็จ";
+  localStorage.setItem("orders",JSON.stringify(o));
   loadOrders();
 }
 
-/* ลบออเดอร์ */
-function delOrder(i){
+function del(i){
+  let o = JSON.parse(localStorage.getItem("orders"));
   if(!confirm("ลบออเดอร์นี้?")) return;
-  const orders = JSON.parse(localStorage.getItem("orders")) || [];
-  orders.splice(i,1);
-  localStorage.setItem("orders", JSON.stringify(orders));
+  o.splice(i,1);
+  localStorage.setItem("orders",JSON.stringify(o));
   loadOrders();
 }
-
-/* สรุปยอดขาย */
-function calcSummary(){
-  const orders = JSON.parse(localStorage.getItem("orders")) || [];
-  let total = 0;
-  let count = 0;
-
-  orders.forEach(o=>{
-    if(o.status === "done"){
-      total += Number(o.total || 0);
-      count++;
-    }
-  });
-
-  document.getElementById("summary").innerHTML = `
-    🧾 ออเดอร์สำเร็จ: <b>${count}</b> รายการ<br>
-    💸 ยอดขายรวม: <b>${total}</b> บาท
-  `;
-}
-
-/* โหลดทันที */
-loadOrders();
 </script>
 
 </body>
