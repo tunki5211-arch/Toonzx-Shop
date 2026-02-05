@@ -3,40 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Toonzx Shop</title>
+<title>Toonzx Roblox Shop</title>
 
 <style>
 body{
-  font-family: sans-serif;
-  background:#111;
-  color:#fff;
   margin:0;
+  font-family:Consolas, monospace;
+  background:#020216;
+  color:#00ffff;
 }
 header{
-  background:#1f1f1f;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 0 15px #00ffff;
+}
+.shop{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+}
+.card{
+  background:#05052a;
+  border:1px solid #00ffff;
   padding:15px;
   text-align:center;
 }
-.shop{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:15px;
-  padding:15px;
-}
-.card{
-  background:#1c1c1c;
-  padding:15px;
-  border-radius:10px;
-}
-.card h3{margin:0}
-.card button{
+button{
   width:100%;
   padding:10px;
   margin-top:10px;
-  background:#00ff9c;
+  background:#00ffff;
   border:none;
-  border-radius:8px;
-  cursor:pointer;
   font-weight:bold;
 }
 .cart{
@@ -46,6 +44,7 @@ header{
   right:0;
   background:#000;
   padding:10px;
+  text-align:center;
 }
 </style>
 </head>
@@ -53,20 +52,22 @@ header{
 <body>
 
 <header>
-  <h2>🛒 Toonzx Roblox Shop</h2>
+  <h1>🧱 ROBLOX ITEM SHOP</h1>
 </header>
 
 <div class="shop" id="shop"></div>
 
 <div class="cart">
-  🧾 ตะกร้า: <span id="total">0</span> บาท
+  🧾 ยอดรวม: <span id="total">0</span> บาท
   <button onclick="checkout()">สั่งซื้อ</button>
 </div>
 
 <script>
+// ❌ ไม่มี login / สมัครสมาชิกใด ๆ
+
 let products = JSON.parse(localStorage.getItem("products")) || [
-  {name:"Robux 100",price:120},
-  {name:"Robux 500",price:550}
+  {name:"Robux 400",price:150},
+  {name:"VIP Server",price:99}
 ];
 
 let cart = [];
@@ -78,40 +79,40 @@ function renderShop(){
     html+=`
       <div class="card">
         <h3>${p.name}</h3>
-        <p>💰 ${p.price} บาท</p>
+        <p>${p.price} บาท</p>
         <button onclick="add(${i})">เพิ่มลงตะกร้า</button>
       </div>
     `;
   });
-  document.getElementById("shop").innerHTML=html;
+  document.getElementById("shop").innerHTML = html;
 }
 
 function add(i){
   cart.push(products[i]);
-  total+=products[i].price;
-  document.getElementById("total").innerText=total;
+  total += products[i].price;
+  document.getElementById("total").innerText = total;
 }
 
 function checkout(){
-  if(cart.length==0){
-    alert("ยังไม่มีสินค้า");
+  if(cart.length === 0){
+    alert("ยังไม่ได้เลือกสินค้า");
     return;
   }
 
   let orders = JSON.parse(localStorage.getItem("orders")) || [];
   orders.push({
-    items:cart,
-    total:total,
-    status:"รอตรวจ",
-    time:new Date().toLocaleString()
+    items: cart,
+    total: total,
+    status: "รอตรวจ",
+    time: new Date().toLocaleString()
   });
 
-  localStorage.setItem("orders",JSON.stringify(orders));
-  alert("สั่งซื้อสำเร็จ รอแอดมินตรวจสอบ");
+  localStorage.setItem("orders", JSON.stringify(orders));
+  alert("สั่งซื้อเรียบร้อย โอนแล้วแจ้งแอดมินได้เลย");
 
-  cart=[];
-  total=0;
-  document.getElementById("total").innerText=0;
+  cart = [];
+  total = 0;
+  document.getElementById("total").innerText = 0;
 }
 
 renderShop();
