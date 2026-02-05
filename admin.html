@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ADMIN PANEL</title>
+<title>Admin Panel</title>
 
 <style>
 body{
@@ -14,120 +14,147 @@ body{
 }
 header{
   text-align:center;
-  padding:15px;
+  padding:20px;
   box-shadow:0 0 15px #00ffff;
 }
-.container{padding:15px}
-input,button{
+.container{
+  padding:20px;
+}
+.card{
+  border:1px solid #00ffff;
+  padding:15px;
+  margin-bottom:15px;
+}
+input{
   width:100%;
   padding:10px;
   margin:5px 0;
-  font-size:16px;
 }
 button{
+  width:100%;
+  padding:10px;
+  margin-top:5px;
   background:#00ffff;
   border:none;
   font-weight:bold;
+  cursor:pointer;
+}
+.danger{
+  background:#ff4444;
+  color:#fff;
 }
 .hidden{display:none}
-.order{
-  border:1px solid #00ffff;
-  padding:10px;
-  margin:10px 0;
-}
-.success{border-color:#00ff00;color:#00ff00}
-.wait{border-color:#ffff00;color:#ffff00}
-.total{
-  border:2px solid #ff00ff;
-  padding:10px;
-  margin:15px 0;
-  text-align:center;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h2>🔐 ADMIN PANEL</h2>
+  <h1>🔐 ADMIN PANEL</h1>
 </header>
 
 <div class="container">
 
 <!-- LOGIN -->
 <div id="loginBox">
-  <input type="password" id="adminPass" placeholder="รหัสแอดมิน">
+  <input id="adminPass" type="password" placeholder="รหัสแอดมิน">
   <button onclick="login()">เข้าสู่ระบบ</button>
 </div>
 
-<!-- PANEL -->
-<div id="panel" class="hidden">
+<!-- ADMIN -->
+<div id="adminPanel" class="hidden">
 
-  <div class="total" id="totalSales">💰 ยอดขายรวม: 0 บาท</div>
+  <h2>➕ เพิ่มสินค้า</h2>
+  <div class="card">
+    <input id="newName" placeholder="ชื่อสินค้า">
+    <input id="newPrice" type="number" placeholder="ราคา">
+    <button onclick="addProduct()">เพิ่มสินค้า</button>
+  </div>
 
-  <h3>⏳ รอตรวจ</h3>
-  <div id="waitOrders"></div>
-
-  <h3>✅ สำเร็จ</h3>
-  <div id="doneOrders"></div>
+  <h2>📦 จัดการสินค้า</h2>
+  <div id="productList"></div>
 
 </div>
+
 </div>
 
 <script>
 const ADMIN_PASSWORD = "Toonzx919921";
 
-function login(){
-  if(adminPass.value !== ADMIN_PASSWORD){
-    alert("❌ รหัสไม่ถูกต้อง");
-    return;
+let products = [];
+
+// โหลดสินค้า
+function loadProducts(){
+  try{
+    products = JSON.parse(localStorage.getItem("products")) || [];
+  }catch{
+    products = [];
   }
-  loginBox.classList.add("hidden");
-  panel.classList.remove("hidden");
-  loadOrders();
 }
 
-function loadOrders(){
-  let orders = JSON.parse(localStorage.getItem("orders")) || [];
-  waitOrders.innerHTML = "";
-  doneOrders.innerHTML = "";
-  let total = 0;
+// แสดงสินค้า
+function renderProducts(){
+  const list = document.getElementById("productList");
+  list.innerHTML = "";
 
-  orders.forEach((o,i)=>{
-    let sum = o.items.reduce((s,it)=>s+Number(it.price||0),0);
-    if(o.status==="สำเร็จ") total += sum;
-
-    let div = document.createElement("div");
-    div.className = "order " + (o.status==="สำเร็จ"?"success":"wait");
+  products.forEach((p,i)=>{
+    const div = document.createElement("div");
+    div.className = "card";
     div.innerHTML = `
-      <b>👤 ${o.name}</b><br>
-      📦 ${o.items.map(it=>it.name).join(", ")}<br>
-      💵 ${sum} บาท<br>
-      สถานะ: ${o.status}<br><br>
-      ${o.status!=="สำเร็จ"
-        ? `<button onclick="done(${i})">✔ สำเร็จ</button>`
-        : ""}
-      <button onclick="del(${i})">🗑 ลบ</button>
+      <b>สินค้า #${i+1}</b><br>
+      <input value="${p.name}" onchange="editName(${i},this.value)">
+      <input type="number" value="${p.price}" onchange="editPrice(${i},this.value)">
+      <button class="danger" onclick="deleteProduct(${i})">ลบสินค้า</button>
     `;
-    (o.status==="สำเร็จ"?doneOrders:waitOrders).appendChild(div);
+    list.appendChild(div);
   });
 
-  totalSales.innerText = "💰 ยอดขายรวม: " + total + " บาท";
+  localStorage.setItem("products", JSON.stringify(products));
 }
 
-function done(i){
-  let o = JSON.parse(localStorage.getItem("orders"));
-  o[i].status="สำเร็จ";
-  localStorage.setItem("orders",JSON.stringify(o));
-  loadOrders();
+// LOGIN
+function login(){
+  if(adminPass.value !== ADMIN_PASSWORD){
+    alert("รหัสแอดมินไม่ถูกต้อง");
+    return;
+  }
+  document.getElementById("loginBox").classList.add("hidden");
+  document.getElementById("adminPanel").classList.remove("hidden");
+  loadProducts();
+  renderProducts();
 }
 
-function del(i){
-  let o = JSON.parse(localStorage.getItem("orders"));
-  if(!confirm("ลบออเดอร์นี้?")) return;
-  o.splice(i,1);
-  localStorage.setItem("orders",JSON.stringify(o));
-  loadOrders();
+// ADD
+function addProduct(){
+  const name = newName.value.trim();
+  const price = Number(newPrice.value);
+
+  if(!name || price <= 0){
+    alert("กรอกข้อมูลให้ครบ");
+    return;
+  }
+
+  products.push({name, price});
+  newName.value = "";
+  newPrice.value = "";
+  renderProducts();
+}
+
+// EDIT
+function editName(i,val){
+  products[i].name = val;
+  localStorage.setItem("products", JSON.stringify(products));
+}
+function editPrice(i,val){
+  products[i].price = Number(val);
+  localStorage.setItem("products", JSON.stringify(products));
+}
+
+// DELETE
+function deleteProduct(i){
+  if(!confirm("ลบสินค้านี้?")) return;
+  products.splice(i,1);
+  renderProducts();
 }
 </script>
 
