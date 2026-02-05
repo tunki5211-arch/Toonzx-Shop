@@ -3,189 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ROBLOX SHOP</title>
+<title>ADMIN</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Consolas, monospace;
-  background:#020216;
-  color:#00ffff;
-}
-header{
-  padding:20px;
-  text-align:center;
-  box-shadow:0 0 15px #00ffff;
-}
-.container{
-  padding:20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:15px;
-}
-.card{
-  background:#05052a;
-  border:1px solid #00ffff;
-  padding:15px;
-  text-align:center;
-  position:relative;
-}
-.featured{
-  border:2px solid #ff00ff;
-  box-shadow:0 0 20px #ff00ff;
-}
-.badge{
-  position:absolute;
-  top:-10px;
-  right:-10px;
-  background:#ff00ff;
-  color:#000;
-  padding:5px 10px;
-  font-weight:bold;
-}
-button{
-  margin-top:10px;
-  width:100%;
-  padding:10px;
-  background:#00ffff;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-}
-.cart{
-  padding:20px;
-  border-top:2px solid #00ffff;
-}
-.admin{
-  display:none;
-  padding:20px;
-  border-top:2px solid #ff00ff;
-}
-.order{
-  border:1px solid #00ffff;
-  padding:10px;
-  margin-bottom:10px;
-}
+body{font-family:Consolas;background:#000;color:#0ff;padding:20px}
+.card{border:1px solid #0ff;padding:10px;margin:10px}
+button{padding:5px;margin:5px}
+input{padding:5px;width:100%}
 </style>
 </head>
 
 <body>
 
-<header>
-  <h1>🧱 ROBLOX ITEM SHOP</h1>
-  <button onclick="toggleAdmin()">🔐 เข้าแอดมิน</button>
-</header>
+<h2>🔐 ADMIN LOGIN</h2>
+<input id="pass" type="password" placeholder="รหัสแอดมิน">
+<button onclick="login()">เข้า</button>
 
-<!-- SHOP -->
-<div class="container">
-  <div class="card featured">
-    <div class="badge">⭐ แนะนำ</div>
-    <h3>Robux 800</h3>
-    <p>฿299</p>
-    <button onclick="addItem('Robux 800',299)">ซื้อ</button>
-  </div>
+<div id="panel" style="display:none">
 
-  <div class="card">
-    <h3>Robux 400</h3>
-    <p>฿150</p>
-    <button onclick="addItem('Robux 400',150)">ซื้อ</button>
-  </div>
+<h3>📦 สินค้า</h3>
+<div id="products"></div>
 
-  <div class="card">
-    <h3>VIP Server</h3>
-    <p>฿99</p>
-    <button onclick="addItem('VIP Server',99)">ซื้อ</button>
-  </div>
-</div>
+<input id="pname" placeholder="ชื่อสินค้า">
+<input id="pprice" type="number" placeholder="ราคา">
+<button onclick="addProduct()">เพิ่มสินค้า</button>
 
-<!-- CART -->
-<div class="cart">
-  <h3>🛒 ตะกร้าสินค้า</h3>
-  <div id="cartList"></div>
-  <p>💰 รวม: <b id="total">0</b> บาท</p>
-  <input id="name" placeholder="ชื่อลูกค้า" style="width:100%;padding:8px">
-  <button onclick="checkout()">ยืนยันออเดอร์</button>
-</div>
+<hr>
 
-<!-- ADMIN -->
-<div class="admin" id="admin">
-  <h2>🔐 Admin Panel</h2>
+<h3>📋 ออเดอร์</h3>
+<div id="orders"></div>
 
-  <div style="border:1px solid #00ffff;padding:10px;margin-bottom:15px">
-    <p>📦 ออเดอร์ทั้งหมด: <b id="orderCount">0</b></p>
-    <p>💰 ยอดขายรวม: <b id="totalSales">0</b> บาท</p>
-  </div>
-
-  <div id="orderList"></div>
 </div>
 
 <script>
-let cart=[];
+const ADMIN="919921";
 
-function addItem(name,price){
-  cart.push({name,price});
-  renderCart();
+function login(){
+ if(pass.value!==ADMIN)return alert("รหัสผิด");
+ panel.style.display="block";
+ loadProducts();loadOrders();
 }
 
-function renderCart(){
-  const box=document.getElementById("cartList");
-  let total=0;
-  box.innerHTML="";
-  cart.forEach(i=>{
-    total+=i.price;
-    box.innerHTML+=`<div>${i.name} - ${i.price}฿</div>`;
-  });
-  document.getElementById("total").innerText=total;
+function loadProducts(){
+ let p=JSON.parse(localStorage.getItem("products"))||[];
+ products.innerHTML="";
+ p.forEach((x,i)=>{
+  products.innerHTML+=`
+   <div class="card">
+    <input value="${x.name}" onchange="editName(${i},this.value)">
+    <input type="number" value="${x.price}" onchange="editPrice(${i},this.value)">
+    <button onclick="delProduct(${i})">ลบ</button>
+   </div>`;
+ });
 }
 
-function checkout(){
-  const name=document.getElementById("name").value;
-  if(!name||cart.length==0){alert("กรอกชื่อและเลือกสินค้า");return;}
-  const orders=JSON.parse(localStorage.getItem("orders")||"[]");
-  const total=cart.reduce((s,i)=>s+i.price,0);
-  orders.push({name,items:cart.map(i=>i.name),total,status:"รอตรวจ"});
-  localStorage.setItem("orders",JSON.stringify(orders));
-  cart=[];
-  renderCart();
-  alert("โอนแล้วให้ทักแอดมิน");
+function addProduct(){
+ let p=JSON.parse(localStorage.getItem("products"))||[];
+ p.push({name:pname.value,price:Number(pprice.value)});
+ localStorage.setItem("products",JSON.stringify(p));
+ loadProducts();
 }
 
-function toggleAdmin(){
-  const a=document.getElementById("admin");
-  a.style.display=a.style.display==="block"?"none":"block";
-  loadOrders();
+function editName(i,v){
+ let p=JSON.parse(localStorage.getItem("products"));
+ p[i].name=v;localStorage.setItem("products",JSON.stringify(p));
+}
+function editPrice(i,v){
+ let p=JSON.parse(localStorage.getItem("products"));
+ p[i].price=v;localStorage.setItem("products",JSON.stringify(p));
+}
+function delProduct(i){
+ let p=JSON.parse(localStorage.getItem("products"));
+ p.splice(i,1);localStorage.setItem("products",JSON.stringify(p));
+ loadProducts();
 }
 
 function loadOrders(){
-  const box=document.getElementById("orderList");
-  const orders=JSON.parse(localStorage.getItem("orders")||"[]");
-  box.innerHTML="";
-  let sum=0;
-  document.getElementById("orderCount").innerText=orders.length;
-
-  orders.forEach((o,i)=>{
-    sum+=o.total;
-    box.innerHTML+=`
-      <div class="order">
-        <b>${o.name}</b><br>
-        ${o.items.join(", ")}<br>
-        💰 ${o.total} บาท<br>
-        สถานะ: ${o.status}
-        <br>
-        <button onclick="deleteOrder(${i})">🗑 ลบ</button>
-      </div>
-    `;
-  });
-  document.getElementById("totalSales").innerText=sum;
+ let o=JSON.parse(localStorage.getItem("orders"))||[];
+ orders.innerHTML="";
+ o.forEach((x,i)=>{
+  orders.innerHTML+=`
+   <div class="card">
+    ${x.customer}<br>
+    ${x.items.map(it=>it.name).join(", ")}<br>
+    สถานะ: ${x.status}
+    <button onclick="done(${i})">สำเร็จ</button>
+   </div>`;
+ });
 }
 
-function deleteOrder(i){
-  const orders=JSON.parse(localStorage.getItem("orders"));
-  orders.splice(i,1);
-  localStorage.setItem("orders",JSON.stringify(orders));
-  loadOrders();
+function done(i){
+ let o=JSON.parse(localStorage.getItem("orders"));
+ o[i].status="สำเร็จ";
+ localStorage.setItem("orders",JSON.stringify(o));
+ loadOrders();
 }
 </script>
-
 </body>
 </html>
